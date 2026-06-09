@@ -1,5 +1,5 @@
 // api/loader.js
-// Catalyst Hub Loader — с Heartbeat, статистикой и вашим Lua-загрузчиком
+// Catalyst Hub Loader — с Heartbeat-модулем и защитой
 
 // ==================== СТАТИСТИКА ====================
 let stats = {
@@ -7,9 +7,9 @@ let stats = {
   activeUsers: new Map(),
   loadsByGame: {},
   loadsByRank: { Free: 0, Premium: 0, Ultimate: 0 },
+  bannedUsers: new Set(),
 };
 
-// Очистка неактивных каждые 60 секунд
 setInterval(() => {
   const now = Date.now();
   for (const [userId, data] of stats.activeUsers) {
@@ -29,17 +29,83 @@ export function getStats() {
       userId: id,
       ...data,
     })),
+    bannedUsers: Array.from(stats.bannedUsers),
   };
 }
 
-// ==================== ВАШ LUA-ЗАГРУЗЧИК (с Heartbeat) ====================
+export function banUser(userId) {
+  stats.bannedUsers.add(userId);
+  stats.activeUsers.delete(userId);
+}
+
+export function unbanUser(userId) {
+  stats.bannedUsers.delete(userId);
+}
+
+export function isBanned(userId) {
+  return stats.bannedUsers.has(userId);
+}
+
+// ==================== ГЕНЕРАЦИЯ ХЕША ====================
+function generateHash(userId, timestamp) {
+  let hash = '';
+  const chars = 'abcdef0123456789';
+  const seed = userId + timestamp;
+  for (let i = 0; i < 64; i++) {
+    const idx = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+    hash += chars[idx];
+  }
+  return hash;
+}
+
+// ==================== LUA-ЗАГРУЗЧИК (ВАШ КОД + HEARTBEAT) ====================
 let loaderScript = `-- ========================================================
--- CATALYST HUB - UNIVERSAL LOADER
+-- CATALYST HUB - PROTECTED LOADER
+-- ========================================================
+
+-- ========================================================
+-- 🔐 ЗАГРУЗКА HEARTBEAT МОДУЛЯ (КРИТИЧЕСКИ!)
+-- Без этого модуля скрипт НЕ ЗАПУСТИТСЯ
+-- ========================================================
+local HeartbeatModule = nil
+local ModuleLoaded = false
+
+local success, err = pcall(function()
+    -- Загружаем модуль через отдельный запрос к серверу
+    local moduleCode = game:HttpGet("https://${HOST}/api/heartbeat?action=module")
+    
+    -- Проверяем, что код не пустой
+    if not moduleCode or moduleCode == "" or #moduleCode < 100 then
+        error("Invalid module code")
+    end
+    
+    -- Выполняем модуль
+    local loadedModule = loadstring(moduleCode)()
+    
+    if type(loadedModule) ~= "table" then
+        error("Module validation failed")
+    end
+    
+    if not loadedModule.IsValid or not loadedModule.IsValid() then
+        error("Module not valid")
+    end
+    
+    HeartbeatModule = loadedModule
+    ModuleLoaded = true
+end)
+
+-- Если модуль не загрузился — тихий выход
+if not success or not ModuleLoaded then
+    -- Никаких ошибок, скрипт просто не работает
+    return
+end
+
+-- ========================================================
+-- 📦 ОБЪЯВЛЕНИЕ СЕРВИСОВ И ПЕРЕМЕННЫХ
 -- ========================================================
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 
 -- 🔥 ЗАГРУЗКА БИБЛИОТЕК
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -49,65 +115,6 @@ Junkie.identifier = 1042993
 Junkie.provider = "Alchemist Hub"
 
 local KeyFileName = "Catalyst_Key.txt"
-local API_BASE = "https://${HOST}"
-
--- ========================================================
--- 💓 HEARTBEAT СИСТЕМА
--- ========================================================
-local UserId = LP.UserId
-local PlaceId = game.PlaceId
-local GameId = game.GameId
-local HeartbeatRunning = false
-
-local function SendHeartbeat(keyType, rank, status)
-    status = status or "active"
-    keyType = keyType or "Unknown"
-    rank = rank or "Standard"
-    
-    local url = API_BASE .. "/api/heartbeat"
-    local query = "?userId=" .. tostring(UserId)
-        .. "&placeId=" .. tostring(PlaceId)
-        .. "&gameId=" .. tostring(GameId)
-        .. "&status=" .. status
-        .. "&keyType=" .. keyType
-        .. "&rank=" .. rank
-    
-    pcall(function()
-        local response = game:HttpGet(url .. query)
-        if response and response:find("keep alive") then
-            -- Сервер ответил, соединение активно
-        end
-    end)
-end
-
-local function StartHeartbeat(keyType, rank)
-    if HeartbeatRunning then return end
-    HeartbeatRunning = true
-    
-    -- Первый heartbeat сразу
-    SendHeartbeat(keyType, rank, "active")
-    
-    -- Запускаем цикл каждые 45 секунд
-    spawn(function()
-        while HeartbeatRunning do
-            wait(45)
-            SendHeartbeat(keyType, rank, "active")
-        end
-    end)
-end
-
-local function StopHeartbeat()
-    HeartbeatRunning = false
-    -- Отправляем финальный heartbeat
-    SendHeartbeat(_G.CatalystKeyType, _G.CatalystRank, "inactive")
-end
-
--- Отправляем heartbeat при выходе из игры
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == LP then
-        StopHeartbeat()
-    end
-end)
 
 -- ========================================================
 -- 🌐 БАЗА ДАННЫХ ИГР
@@ -184,13 +191,21 @@ end
 -- 🚀 ЗАПУСК ОСНОВНОГО СКРИПТА
 -- ========================================================
 local function LaunchCheatDirectly()
+    -- Проверяем, что модуль всё ещё валиден
+    if not HeartbeatModule or not HeartbeatModule.IsValid() then
+        Log("ERROR: Heartbeat module invalid")
+        return
+    end
+    
     local safeGameName = (_G.GameName ~= "") and _G.GameName or "Unknown Game"
     Log("Loading Catalyst / " .. safeGameName)
     Log("Key Type: " .. (_G.CatalystKeyType or "Unknown"))
     Log("Rank: " .. (_G.CatalystRank or "Standard"))
     
-    -- Запускаем heartbeat
-    StartHeartbeat(_G.CatalystKeyType, _G.CatalystRank)
+    -- Отправляем heartbeat через модуль
+    if HeartbeatModule.SendHeartbeat then
+        HeartbeatModule.SendHeartbeat(_G.CatalystKeyType, _G.CatalystRank, "launched")
+    end
     
     if not _G.ScriptURL or _G.ScriptURL == "" then
         Log("ERROR: No script URL for game ID: " .. game.PlaceId)
@@ -199,7 +214,24 @@ local function LaunchCheatDirectly()
     
     local success, content = pcall(game.HttpGet, game, _G.ScriptURL)
     if success and content and content ~= "" then
-        loadstring(content)()
+        -- Добавляем проверку модуля в загружаемый скрипт
+        local wrappedScript = [[
+-- Проверка Heartbeat модуля перед выполнением
+if not _G.Catalyst_HeartbeatActive then
+    return
+end
+
+-- Запрещаем переопределение проверки
+local Catalyst_Secure = _G.Catalyst_HeartbeatActive
+
+]] .. content .. [[
+
+-- Проверка после выполнения скрипта
+if not Catalyst_Secure then
+    return
+end
+]]
+        loadstring(wrappedScript)()
     else
         Log("ERROR: Failed to download script")
     end
@@ -333,11 +365,14 @@ KeyTab:AddButton({
 KeyWindow:SelectTab(1)
 Log("GUI ready")`;
 
-// ==================== ФУНКЦИИ ДЛЯ АДМИНКИ ====================
+// ==================== ХРАНИЛИЩЕ ИГР ====================
+const gamesInfo = {
+  '286090429': { name: 'Arsenal', status: 'Undetected' },
+  '142823291': { name: 'Murder Mystery 2', status: 'Undetected' },
+  '17625359962': { name: 'Rivals', status: 'Undetected' },
+};
 
-export function getLoaderScript() {
-  return loaderScript;
-}
+export function getLoaderScript() { return loaderScript; }
 
 export function updateLoaderScript(newScript) {
   if (newScript && newScript.trim().length > 0) {
@@ -347,15 +382,7 @@ export function updateLoaderScript(newScript) {
   return false;
 }
 
-const gamesInfo = {
-  '286090429': { name: 'Arsenal', status: 'Undetected' },
-  '142823291': { name: 'Murder Mystery 2', status: 'Undetected' },
-  '17625359962': { name: 'Rivals', status: 'Undetected' },
-};
-
-export function getGamesInfo() {
-  return gamesInfo;
-}
+export function getGamesInfo() { return gamesInfo; }
 
 export function updateGameInfo(gameId, data) {
   if (gamesInfo[gameId]) {
@@ -368,23 +395,18 @@ export function addGameInfo(gameId, name, status) {
   gamesInfo[gameId] = { name: name || 'Unknown', status: status || 'Undetected' };
 }
 
-export function deleteGameInfo(gameId) {
-  delete gamesInfo[gameId];
-}
+export function deleteGameInfo(gameId) { delete gamesInfo[gameId]; }
 
 // ==================== ОСНОВНОЙ ОБРАБОТЧИК ====================
-
 export default async function handler(req, res) {
   const ua = req.headers['user-agent'] || '';
 
+  // Строгая проверка User-Agent
   if (!ua.includes('Roblox')) {
-    return res.status(403).send('Access Denied: Roblox client required');
+    return res.status(403).send('Access Denied: Roblox client required\n\nOnly Roblox game clients can access this endpoint.');
   }
 
   const host = req.headers.host;
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-
-  // Увеличиваем счётчик
   stats.totalLoads++;
 
   // Подставляем реальный хост в Lua-скрипт
