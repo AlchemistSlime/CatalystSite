@@ -1,324 +1,302 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catalyst Admin Panel</title>
+  <title>Catalyst - Roblox Script Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            cyber: { purple: '#a855f7', dark: '#0f0b1e', darker: '#07040f', neon: '#d946ef', pink: '#ec4899' },
+            cyber: { purple: '#a855f7', dark: '#0f0b1e', darker: '#07040f', neon: '#d946ef', pink: '#ec4899', accent: '#7c3aed' },
           },
         },
       },
     };
   </script>
   <style>
-    body { background: #07040f; }
-    .gradient-text { background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .tab-btn.active { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #fff; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    .gradient-text { background: linear-gradient(135deg, #d946ef, #a855f7, #7c3aed, #ec4899); background-size: 200% 200%; animation: gradientShift 4s ease-in-out infinite; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-static { background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .btn-glow { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); transition: all 0.3s ease; }
+    .btn-glow:hover { box-shadow: 0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4); transform: translateY(-2px); }
+    .card-hover { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .card-hover:hover { transform: translateY(-8px); border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2); }
+    .dot-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; background: #07040f; }
+    .dot { position: absolute; border-radius: 50%; background: rgba(168, 85, 247, 0.4); box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(139, 92, 246, 0.3); will-change: transform, opacity; }
+    @keyframes dotDrift { 0% { transform: translateY(0) translateX(0); opacity: 0.4; } 30% { opacity: 0.7; } 60% { opacity: 0.5; } 100% { transform: translateY(-100vh) translateX(70px); opacity: 0; } }
+    @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.8); opacity: 0.8; } }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .animate-hero { opacity: 0; visibility: hidden; transform: translateY(30px); transition: opacity 0.8s, transform 0.8s, visibility 0s 0.8s; }
+    .animate-hero.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.8s, transform 0.8s, visibility 0s 0s; }
+    .animate-nav { opacity: 0; visibility: hidden; transform: translateY(-20px); transition: opacity 0.5s, transform 0.5s, visibility 0s 0.5s; }
+    .animate-nav.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.5s, transform 0.5s, visibility 0s 0s; }
+    .section-reveal { opacity: 0; visibility: hidden; transform: translateY(40px); transition: opacity 0.7s, transform 0.7s, visibility 0s 0.7s; }
+    .section-reveal.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.7s, transform 0.7s, visibility 0s 0s; }
+    .btn-fixed-width { min-width: 180px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #07040f; } ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 3px; }
   </style>
 </head>
-<body class="text-white font-sans min-h-screen p-6">
-  <div class="max-w-6xl mx-auto">
+<body class="bg-cyber-darker text-white font-sans min-h-screen relative">
+  <div class="dot-bg" id="dotBg"></div>
+  <div class="relative z-10">
 
-    <!-- Заголовок + авторизация -->
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-      <div>
-        <h1 class="text-3xl font-bold gradient-text">Catalyst Admin Panel</h1>
-        <p class="text-purple-400/50 text-sm mt-1">Games · Loader · Logs</p>
-      </div>
-      <div class="flex gap-3">
-        <input id="passwordInput" type="password" placeholder="Password" class="bg-cyber-dark border border-purple-900/50 rounded-lg px-4 py-2 text-white placeholder-purple-400/50 focus:outline-none focus:border-purple-500 w-44" />
-        <button id="authBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Log In</button>
-      </div>
-    </div>
-
-    <div id="authStatus" class="mb-6 text-sm"></div>
-
-    <!-- Основной контент (скрыт до авторизации) -->
-    <div id="mainContent" class="hidden">
-
-      <!-- Табы -->
-      <div class="flex gap-2 mb-8 flex-wrap border-b border-purple-900/30 pb-4">
-        <button class="tab-btn active px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-games">Games</button>
-        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-loader">Universal Loader</button>
-        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-logs">Launch Logs</button>
-      </div>
-
-      <!-- Таб: Games -->
-      <div id="tab-games" class="tab-content active">
-        <!-- Добавление игры -->
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-6">
-          <h2 class="text-xl font-bold mb-4">Add New Game</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <input id="newGameId" placeholder="PlaceId (e.g. 142823291)" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
-            <input id="newGameName" placeholder="Game Name (e.g. MM2)" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
-            <select id="newGameStatus" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500">
-              <option value="Undetected">Undetected</option>
-              <option value="On Update">On Update</option>
-              <option value="Patched">Patched</option>
-            </select>
+    <!-- НАВИГАЦИЯ -->
+    <nav id="navbar" class="animate-nav fixed top-0 left-0 right-0 z-50">
+      <div class="bg-cyber-dark/80 backdrop-blur-xl border-b border-purple-900/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <a href="#" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <span class="text-2xl font-bold gradient-text">CATALYST</span>
+          </a>
+          <div class="hidden md:flex items-center gap-1">
+            <a href="#scripts" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Scripts</a>
+            <a href="#kernel" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Kernel</a>
+            <a href="#pricing" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Premium</a>
           </div>
-          <button id="addGameBtn" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Add Game</button>
-        </div>
-
-        <!-- Список игр -->
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Manage Games</h2>
-          <div id="gamesList" class="space-y-4"></div>
+          <button id="copyLoaderBtn" class="btn-glow bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-fixed-width">Copy Loader</button>
+          <button id="mobileMenuBtn" class="md:hidden p-2 text-purple-300 hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
         </div>
       </div>
-
-      <!-- Таб: Universal Loader -->
-      <div id="tab-loader" class="tab-content">
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Universal Loader Script</h2>
-          <p class="text-purple-300/60 text-sm mb-2">This Lua script is sent to all users.</p>
-          <p class="text-purple-400/50 text-xs mb-4">Users execute: <code class="text-green-400">loadstring(game:HttpGet("https://catalyst-sites.vercel.app/api/loader"))()</code></p>
-          <textarea id="loaderCode" rows="20" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4 resize-y"></textarea>
-          <div class="flex gap-4 mb-4">
-            <button id="loadLoaderBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-5 py-2 rounded-lg text-sm transition">Load Current</button>
-            <button id="updateLoaderBtn" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Update Loader</button>
-          </div>
-          <div id="loaderStatus" class="text-sm"></div>
+      <div id="mobileMenu" class="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-purple-900/30 hidden">
+        <div class="px-6 py-4 space-y-2">
+          <a href="#scripts" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Scripts</a>
+          <a href="#kernel" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Kernel</a>
+          <a href="#pricing" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Premium</a>
         </div>
       </div>
+    </nav>
 
-      <!-- Таб: Launch Logs -->
-      <div id="tab-logs" class="tab-content">
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Launch Logs</h2>
-          <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-purple-900/30 text-purple-300">
-                  <th class="py-3 px-4">Timestamp</th>
-                  <th class="py-3 px-4">IP</th>
-                  <th class="py-3 px-4">Game ID</th>
-                  <th class="py-3 px-4">Game Name</th>
-                </tr>
-              </thead>
-              <tbody id="logsBody"></tbody>
-            </table>
+    <!-- HERO -->
+    <section id="hero" class="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-20">
+      <div class="max-w-4xl">
+        <div class="animate-hero" id="heroTitle">
+          <h1 class="text-6xl md:text-8xl font-black leading-tight mb-6 tracking-tight">
+            <span class="gradient-text">CATALYST:</span><br />
+            <span class="text-white">UP YOUR GAMEPLAY.</span>
+          </h1>
+        </div>
+        <div class="animate-hero" id="heroDesc">
+          <p class="text-purple-200/70 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
+            Dominate every Roblox server with lightning-fast, undetected scripts.
+            <br class="hidden md:block" />
+            <span class="text-purple-400 font-semibold">Free for all. Premium for legends.</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-5 justify-center animate-hero" id="heroBtns">
+          <button id="heroCopyBtn" class="btn-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 btn-fixed-width">Copy Loader</button>
+          <button id="joinDiscordBtn" class="border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 backdrop-blur-sm btn-fixed-width">Join Discord</button>
+        </div>
+        <div class="mt-20 animate-hero" id="scrollIndicator">
+          <div class="animate-bounce">
+            <svg class="w-8 h-8 mx-auto text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </div>
         </div>
       </div>
+    </section>
 
-    </div>
+    <!-- SCRIPTS -->
+    <section id="scripts" class="section-reveal max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Our Scripts</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">Undetected, regularly updated, ready to execute. Choose your game and dominate.</p>
+      </div>
+      <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <p class="text-center col-span-full text-purple-400/50 py-8">Loading scripts...</p>
+      </div>
+    </section>
+
+    <!-- KERNEL -->
+    <section id="kernel" class="section-reveal py-24 relative">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent"></div>
+      <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-block px-6 py-2 bg-purple-600/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium mb-8 backdrop-blur-sm">IN DEVELOPMENT</div>
+        <h2 class="text-6xl font-black mb-6">Catalyst <span class="gradient-text">Kernel</span></h2>
+        <p class="text-purple-200/60 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">Our proprietary Level 8 executor with Lua 5.1/5.2 support, unparalleled stability, and zero detection vectors.</p>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">100% UNC</div><p class="text-purple-200/50 text-sm">Full Lua environment compatibility.</p></div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">Instant Injection</div><p class="text-purple-200/50 text-sm">Zero-delay execution without crashing.</p></div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">Undetected</div><p class="text-purple-200/50 text-sm">Bypasses Byfron/Hyperion.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" class="section-reveal max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Choose Your Power</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">Want to be the leader of every server? Unlock Premium and dominate.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Standard</h3>
+          <p class="text-purple-300/60 text-sm mb-8">Free forever</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All free scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Basic features</li>
+            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No premium scripts</li>
+          </ul>
+          <button class="mt-auto border-2 border-purple-500/50 text-purple-300 px-6 py-3 rounded-full font-semibold text-sm cursor-default">Current Plan</button>
+        </div>
+        <div class="card-hover bg-gradient-to-b from-purple-900/40 to-cyber-dark/90 border-2 border-purple-500 rounded-2xl p-8 flex flex-col items-center text-center transform md:scale-105 relative">
+          <div class="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">MOST POPULAR</div>
+          <h3 class="text-2xl font-bold mb-1 mt-2">Premium</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$9.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Standard features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All premium scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Priority support</li>
+          </ul>
+          <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-6 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 btn-glow text-center">Buy Premium</a>
+        </div>
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Ultimate</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$19.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Premium features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Custom scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Dev chat</li>
+          </ul>
+          <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto w-full border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 text-center">Buy Ultimate</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-purple-900/30 py-10">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg"></div>
+          <span class="gradient-text font-bold">CATALYST</span>
+        </div>
+        <p class="text-purple-400/50 text-sm">2026 Catalyst Hub. Not affiliated with Roblox.</p>
+        <div class="flex gap-6 text-purple-400/50 text-sm">
+          <a href="#" class="hover:text-purple-300 transition">Terms</a>
+          <a href="#" class="hover:text-purple-300 transition">Privacy</a>
+          <a href="#" class="hover:text-purple-300 transition">Contact</a>
+        </div>
+      </div>
+    </footer>
   </div>
 
   <script>
-    // ========== АВТОРИЗАЦИЯ ==========
-    let authPassword = '';
-    const savedPass = sessionStorage.getItem('admin_pass');
-    if (savedPass) { document.getElementById('passwordInput').value = savedPass; authenticate(savedPass); }
-
-    document.getElementById('authBtn').addEventListener('click', () => {
-      const pass = document.getElementById('passwordInput').value;
-      if (!pass) return alert('Enter password');
-      sessionStorage.setItem('admin_pass', pass);
-      authenticate(pass);
-    });
-
-    document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authBtn').click(); });
-
-    async function authenticate(pass) {
-      authPassword = pass;
-      // Проверка пароля через запрос логов (требует авторизации)
-      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(pass)}`);
-      if (res.status === 401) {
-        document.getElementById('authStatus').innerHTML = '<span class="text-red-400">Invalid password</span>';
-        document.getElementById('mainContent').classList.add('hidden');
-        return;
+    // Фон с точками
+    function createDotBackground() {
+      const c = document.getElementById('dotBg'); if (!c) return;
+      c.innerHTML = '';
+      const f = document.createDocumentFragment();
+      for (let i = 0; i < 100; i++) {
+        const d = document.createElement('div'); d.classList.add('dot');
+        const s = Math.random() * 8 + 3;
+        d.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:${Math.random()>0.6?`dotPulse ${Math.random()*4+3}s ease-in-out infinite`:`dotDrift ${Math.random()*30+20}s linear infinite`};animation-delay:${Math.random()*15}s;opacity:${Math.random()*0.4+0.3}`;
+        d.dataset.baseOpacity = d.style.opacity; f.appendChild(d);
       }
-      document.getElementById('authStatus').innerHTML = '<span class="text-green-400">Authenticated successfully</span>';
-      document.getElementById('mainContent').classList.remove('hidden');
-      await loadAllData();
+      c.appendChild(f);
+    }
+    function setupDotsFade() {
+      const dots = document.querySelectorAll('.dot');
+      window.addEventListener('scroll', () => {
+        const p = Math.min(window.scrollY / (document.body.scrollHeight - window.innerHeight || 1), 1);
+        dots.forEach(d => { d.style.opacity = Math.max(parseFloat(d.dataset.baseOpacity || 0.4) * (1 - p * 0.7), 0.03); });
+      }, { passive: true });
     }
 
-    // ========== API-ЗАПРОСЫ ==========
-    async function apiGet(action, params = '') {
-      const res = await fetch(`/api/admin?action=${action}&password=${encodeURIComponent(authPassword)}${params}`);
-      return res.json();
-    }
-
-    async function apiPost(body) {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, password: authPassword }),
+    function setupAnimations() {
+      const n = document.getElementById('navbar');
+      if (n) requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add('visible')));
+      [{id:'heroTitle',d:300},{id:'heroDesc',d:600},{id:'heroBtns',d:900},{id:'scrollIndicator',d:1300}].forEach(({id,d}) => {
+        const e = document.getElementById(id); if (e) setTimeout(() => requestAnimationFrame(() => e.classList.add('visible')), d);
       });
-      return res.json();
+      const o = new IntersectionObserver(e => { e.forEach(e => { if (e.isIntersecting) requestAnimationFrame(() => e.target.classList.add('visible')); }); }, { threshold: 0.1 });
+      document.querySelectorAll('.section-reveal').forEach(s => o.observe(s));
+    }
+    function setupMobileMenu() {
+      const b = document.getElementById('mobileMenuBtn'), m = document.getElementById('mobileMenu');
+      if (b && m) { b.addEventListener('click', () => m.classList.toggle('hidden')); m.querySelectorAll('a').forEach(l => l.addEventListener('click', () => m.classList.add('hidden'))); }
+    }
+    function setupSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', function(e) {
+        e.preventDefault(); const t = document.querySelector(this.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' });
+      }));
     }
 
-    // ========== ЗАГРУЗКА ДАННЫХ ==========
-    async function loadAllData() {
-      // Загружаем игры
-      const gamesData = await apiGet('getGames');
-      renderGamesList(gamesData.games || {});
-
-      // Загружаем текущий загрузчик (публичный эндпоинт, пароль не нужен)
-      const loaderRes = await fetch('/api/admin?action=loader');
-      document.getElementById('loaderCode').value = await loaderRes.text();
-
-      // Загружаем логи
-      const logsData = await apiGet('logs');
-      renderLaunchLogs(logsData.launchLogs || []);
+    // Загрузка игр
+    async function loadStatuses() {
+      try {
+        const res = await fetch('/api/admin?action=status');
+        const data = await res.json();
+        return data.games || [];
+      } catch (e) {
+        return [];
+      }
     }
 
-    // ========== ОТРИСОВКА ИГР ==========
-    function renderGamesList(games) {
-      const container = document.getElementById('gamesList');
-      const entries = Object.entries(games);
-
-      if (entries.length === 0) {
-        container.innerHTML = '<p class="text-purple-400/50 text-center py-8">No games added yet</p>';
+    function renderScriptCards(games) {
+      const container = document.getElementById('scriptsContainer');
+      if (!games.length) {
+        container.innerHTML = '<p class="text-center col-span-full text-purple-400/50 py-8">No scripts available. Check admin panel.</p>';
         return;
       }
-
-      container.innerHTML = entries.map(([id, data]) => `
-        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-5">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">PlaceId</label>
-              <input type="text" class="w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" value="${id}" readonly />
-            </div>
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">Name</label>
-              <input type="text" class="game-name-input w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" value="${data.name || ''}" data-game="${id}" />
-            </div>
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">Status</label>
-              <select class="game-status-select w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" data-game="${id}">
-                <option value="Undetected" ${data.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
-                <option value="On Update" ${data.status === 'On Update' ? 'selected' : ''}>On Update</option>
-                <option value="Patched" ${data.status === 'Patched' ? 'selected' : ''}>Patched</option>
-              </select>
-            </div>
+      const statusStyles = {
+        'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30',
+        'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
+        'Patched': 'bg-red-600/20 text-red-400 border-red-500/30',
+      };
+      container.innerHTML = games.map(g => {
+        const sc = statusStyles[g.status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
+        return `<div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
+          <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
+            <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
-          <div class="flex gap-2">
-            <button class="save-game-btn bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${id}">Save Changes</button>
-            <button class="delete-game-btn bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/40 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${id}">Delete</button>
-          </div>
-        </div>
-      `).join('');
+          <h3 class="text-xl font-bold mb-2">${g.name || g.game}</h3>
+          <p class="text-purple-200/50 text-sm mb-4">Place ID: ${g.game}</p>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${sc}">
+            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>${g.status ? g.status.toUpperCase() : 'UNKNOWN'}
+          </span>
+        </div>`;
+      }).join('');
+    }
 
-      // Обработчики Save
-      document.querySelectorAll('.save-game-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const game = btn.dataset.game;
-          const name = document.querySelector(`.game-name-input[data-game="${game}"]`).value;
-          const status = document.querySelector(`.game-status-select[data-game="${game}"]`).value;
-          const result = await apiPost({ action: 'updateGame', game, name, status });
-          if (result.success) {
-            btn.textContent = 'Saved!';
-            btn.classList.add('!bg-green-600');
-            setTimeout(() => {
-              btn.textContent = 'Save Changes';
-              btn.classList.remove('!bg-green-600');
-            }, 1500);
-          } else {
-            alert('Error: ' + (result.error || 'Unknown'));
-          }
-        });
-      });
+    function getLoaderScript() {
+      return `loadstring(game:HttpGet("${window.location.origin}/api/admin?action=loader"))()`;
+    }
 
-      // Обработчики Delete
-      document.querySelectorAll('.delete-game-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const game = btn.dataset.game;
-          if (!confirm(`Delete game ${game}?`)) return;
-          const result = await apiPost({ action: 'deleteGame', game });
-          if (result.success) {
-            await loadAllData(); // перезагружаем список
-          } else {
-            alert('Error: ' + (result.error || 'Unknown'));
-          }
-        });
+    async function copyLoader() {
+      try { await navigator.clipboard.writeText(getLoaderScript()); return true; }
+      catch { const t = document.createElement('textarea'); t.value = getLoaderScript(); t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); return true; }
+    }
+
+    function setupCopyButton(id) {
+      const b = document.getElementById(id); if (!b) return;
+      b.addEventListener('click', async () => {
+        const o = b.textContent; if (await copyLoader()) { b.textContent = 'Copied!'; b.classList.add('!bg-green-600'); setTimeout(() => { b.textContent = o; b.classList.remove('!bg-green-600'); }, 2000); }
       });
     }
 
-    // ========== ДОБАВЛЕНИЕ ИГРЫ ==========
-    document.getElementById('addGameBtn').addEventListener('click', async () => {
-      const id = document.getElementById('newGameId').value.trim();
-      const name = document.getElementById('newGameName').value.trim();
-      const status = document.getElementById('newGameStatus').value;
-      if (!id || !name) return alert('PlaceId and Name are required');
-
-      const result = await apiPost({ action: 'addGame', game: id, name, status });
-      if (result.success) {
-        document.getElementById('newGameId').value = '';
-        document.getElementById('newGameName').value = '';
-        await loadAllData(); // обновить список
-      } else {
-        alert('Error: ' + (result.error || 'Unknown'));
-      }
-    });
-
-    // ========== LOADER ==========
-    document.getElementById('loadLoaderBtn').addEventListener('click', async () => {
-      const res = await fetch('/api/admin?action=loader');
-      document.getElementById('loaderCode').value = await res.text();
-      document.getElementById('loaderStatus').innerHTML = '<span class="text-green-400">Loader loaded from server</span>';
-    });
-
-    document.getElementById('updateLoaderBtn').addEventListener('click', async () => {
-      const loaderCode = document.getElementById('loaderCode').value;
-      if (!loaderCode.trim()) return alert('Loader cannot be empty');
-
-      const result = await apiPost({ action: 'updateLoader', loaderScript: loaderCode });
-      if (result.success) {
-        document.getElementById('loaderStatus').innerHTML = '<span class="text-green-400">Loader updated successfully!</span>';
-        const btn = document.getElementById('updateLoaderBtn');
-        btn.textContent = 'Updated!';
-        btn.classList.add('!bg-green-600');
-        setTimeout(() => {
-          btn.textContent = 'Update Loader';
-          btn.classList.remove('!bg-green-600');
-        }, 2000);
-      } else {
-        document.getElementById('loaderStatus').innerHTML = `<span class="text-red-400">Error: ${result.error || 'Unknown'}</span>`;
-      }
-    });
-
-    // ========== LOGS ==========
-    async function renderLaunchLogs(logs) {
-      const tbody = document.getElementById('logsBody');
-      if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-8 px-4 text-purple-400/50 text-center">No launch logs yet</td></tr>';
-        return;
-      }
-      tbody.innerHTML = logs.slice().reverse().slice(0, 100).map(l => `
-        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10">
-          <td class="py-3 px-4 text-sm text-purple-300">${new Date(l.timestamp).toLocaleString()}</td>
-          <td class="py-3 px-4 font-mono text-xs">${l.ip}</td>
-          <td class="py-3 px-4 text-sm">${l.game || ''}</td>
-          <td class="py-3 px-4 text-sm">${l.gameName || ''}</td>
-        </tr>
-      `).join('');
+    function setupDiscordButton() {
+      const b = document.getElementById('joinDiscordBtn'); if (!b) return;
+      b.addEventListener('click', () => window.open('https://discord.gg/YOUR_INVITE_CODE', '_blank'));
     }
 
-    document.getElementById('refreshLogsBtn').addEventListener('click', async () => {
-      const data = await apiGet('logs');
-      renderLaunchLogs(data.launchLogs || []);
-    });
+    window.addEventListener('load', async () => {
+      createDotBackground();
+      setupDotsFade();
+      setupAnimations();
+      setupMobileMenu();
+      setupSmoothScroll();
 
-    // ========== ТАБЫ ==========
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-      });
+      const games = await loadStatuses();
+      renderScriptCards(games);
+
+      setupCopyButton('copyLoaderBtn');
+      setupCopyButton('heroCopyBtn');
+      setupDiscordButton();
     });
   </script>
 </body>
