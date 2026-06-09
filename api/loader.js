@@ -1,51 +1,88 @@
 // api/loader.js
-// Catalyst Hub Loader — чистый загрузчик
+// Catalyst Hub — оптимизированный загрузчик
 
 let stats = {
   totalLoads: 0,
 };
 
 let loaderScript = `-- ========================================================
--- CATALYST HUB - LOADER
+-- CATALYST HUB - OPTIMIZED LOADER
 -- ========================================================
+
+-- ========================================================
+-- 🛡️ ЗАЩИТА: Анти-дамп
+-- ========================================================
+local function AntiDump()
+    pcall(function()
+        local hidden = {}
+        local mt = {
+            __index = function(t, k)
+                if hidden[k] then return hidden[k] end
+                return rawget(t, k)
+            end,
+            __newindex = function(t, k, v)
+                if type(k) == "string" and (k:find("Catalyst") or k:find("HB_")) then
+                    hidden[k] = v
+                    return
+                end
+                rawset(t, k, v)
+            end
+        }
+        setmetatable(_G, mt)
+    end)
+end
+
+-- ========================================================
+-- 🛡️ ЗАЩИТА: Анти-декомпиляция
+-- ========================================================
+local function AntiDecompile()
+    if game:GetService("RunService"):IsStudio() then
+        while true do end
+    end
+    
+    local bad = {"dex", "Decompiler", "Dumper", "SaveInstance", "DarkDex", "ScriptDumper", "RemoteSpy"}
+    for _, name in ipairs(bad) do
+        pcall(function()
+            local obj = game:GetService("CoreGui"):FindFirstChild(name)
+            if obj then obj:Destroy() end
+        end)
+    end
+    
+    return false
+end
+
+AntiDump()
+if AntiDecompile() then return end
 
 -- ========================================================
 -- 🔐 ЗАГРУЗКА HEARTBEAT МОДУЛЯ С GITHUB
 -- ========================================================
 local HeartbeatModule = nil
 
-local success, err = pcall(function()
-    -- Загружаем модуль с GitHub
-    local moduleCode = game:HttpGet("https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystHeartbeat.lua")
-    
-    if not moduleCode or moduleCode == "" or #moduleCode < 100 then
-        error("Empty module")
-    end
-    
-    -- Выполняем модуль
-    local result = loadstring(moduleCode)()
-    
-    if type(result) == "table" and result.IsValid and result.IsValid() then
-        HeartbeatModule = result
-    else
-        error("Module not valid")
+pcall(function()
+    local code = game:HttpGet("https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystHeartbeat.lua")
+    if code and #code > 100 then
+        local result = loadstring(code)()
+        if type(result) == "table" and result.IsValid and result.IsValid() then
+            HeartbeatModule = result
+        end
     end
 end)
 
--- Если модуль не загрузился — скрипт не запустится
-if not HeartbeatModule then
-    -- Тихо выходим
-    return
-end
+if not HeartbeatModule then return end
 
 -- ========================================================
--- 📦 ОБЪЯВЛЕНИЕ СЕРВИСОВ И ПЕРЕМЕННЫХ
+-- 📦 СЕРВИСЫ
 -- ========================================================
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
--- 🔥 ЗАГРУЗКА БИБЛИОТЕК
+-- ========================================================
+-- 🔥 БИБЛИОТЕКИ
+-- ========================================================
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local Junkie = loadstring(game:HttpGet("https://jnkie.com/sdk/library.lua"))()
 
@@ -55,7 +92,7 @@ Junkie.provider = "Alchemist Hub"
 local KeyFileName = "Catalyst_Key.txt"
 
 -- ========================================================
--- 🌐 БАЗА ДАННЫХ ИГР
+-- 🌐 БАЗА ИГР
 -- ========================================================
 local SupportedGames = {
     [286090429] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/refs/heads/main/CatalystArsenal.lua",
@@ -70,25 +107,21 @@ _G.CatalystKeyType = "Unknown"
 _G.CatalystRank = "Standard"
 _G.ScriptURL = nil
 _G.GameName = "Unknown Game"
+_G.Catalyst_Loaded = os.time()
 
 -- ========================================================
--- 📝 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+-- 📝 LOGGING
 -- ========================================================
-local function Log(message)
-    print("[Catalyst Hub] " .. tostring(message))
+local function Log(msg)
+    print("[Catalyst] " .. tostring(msg))
 end
 
 -- ========================================================
--- 🔑 ПРОВЕРКА КЛЮЧА ВО ВСЕХ СЕРВИСАХ
+-- 🔑 ПРОВЕРКА КЛЮЧА
 -- ========================================================
 local function CheckKeyInAllServices(key)
-    if type(key) == "string" then
-        key = key:gsub("%s+", "")
-    end
-    
-    if not key or key == "" or #key < 5 then
-        return false, nil, nil
-    end
+    if type(key) == "string" then key = key:gsub("%s+", "") end
+    if not key or #key < 5 then return false, nil, nil end
     
     local services = {
         { name = "Free",     keyType = "Free",     rank = "Standard" },
@@ -98,25 +131,18 @@ local function CheckKeyInAllServices(key)
     
     for _, svc in ipairs(services) do
         Junkie.service = svc.name
-        local success, result = pcall(function()
-            return Junkie.check_key(key)
-        end)
+        local s, r = pcall(function() return Junkie.check_key(key) end)
         
-        if success and result and type(result) == "table" then
-            Log(svc.name .. " service response: " .. (result.valid and "VALID" or "invalid"))
-            if result.valid == true then
-                pcall(function()
-                    if writefile then writefile(KeyFileName, key) end
-                end)
-                Log("Key belongs to: " .. svc.name .. " -> Type: " .. svc.keyType .. ", Rank: " .. svc.rank)
-                
-                -- Отправляем heartbeat с информацией о ключе
-                if HeartbeatModule and HeartbeatModule.SendHeartbeat then
-                    HeartbeatModule.SendHeartbeat("key_verified")
-                end
-                
-                return true, svc.keyType, svc.rank
+        if s and r and type(r) == "table" and r.valid then
+            pcall(function() if writefile then writefile(KeyFileName, key) end end)
+            Log("Key: " .. svc.name .. " | " .. svc.keyType .. " | " .. svc.rank)
+            
+            -- Отправляем heartbeat
+            if HeartbeatModule and HeartbeatModule.SendHeartbeat then
+                HeartbeatModule.SendHeartbeat("key_verified")
             end
+            
+            return true, svc.keyType, svc.rank
         end
     end
     
@@ -124,116 +150,126 @@ local function CheckKeyInAllServices(key)
 end
 
 -- ========================================================
--- 🚀 ЗАПУСК ОСНОВНОГО СКРИПТА
+-- ✅ ПРОВЕРКА БЕЗОПАСНОСТИ ПЕРЕД ЗАПУСКОМ
 -- ========================================================
-local function LaunchCheatDirectly()
+local function SecurityCheck()
     -- Проверяем heartbeat модуль
     if not HeartbeatModule or not HeartbeatModule.IsValid() then
-        Log("ERROR: Heartbeat module invalid")
+        return false
+    end
+    
+    -- Проверяем что глобальные переменные не подменили
+    if not _G.Catalyst_HeartbeatActive then
+        return false
+    end
+    
+    -- Проверяем что скрипт не был отключён
+    if _G.Catalyst_Shutdown then
+        return false
+    end
+    
+    -- Проверяем что мы в игре (не в студии)
+    if RunService:IsStudio() then
+        return false
+    end
+    
+    return true
+end
+
+-- ========================================================
+-- 🚀 ЗАПУСК СКРИПТА ИГРЫ
+-- ========================================================
+local function LaunchCheatDirectly()
+    if not SecurityCheck() then
+        Log("Security check failed")
         return
     end
     
-    local safeGameName = (_G.GameName ~= "") and _G.GameName or "Unknown Game"
-    Log("Loading Catalyst / " .. safeGameName)
-    Log("Key Type: " .. (_G.CatalystKeyType or "Unknown"))
-    Log("Rank: " .. (_G.CatalystRank or "Standard"))
+    Log("Loading " .. _G.GameName)
+    Log("Key: " .. _G.CatalystKeyType .. " | Rank: " .. _G.CatalystRank)
     
-    if not _G.ScriptURL or _G.ScriptURL == "" then
-        Log("ERROR: No script URL for game ID: " .. game.PlaceId)
+    if not _G.ScriptURL then
+        Log("ERROR: No script URL")
         return
     end
     
-    local success, content = pcall(game.HttpGet, game, _G.ScriptURL)
-    if success and content and content ~= "" then
-        -- Добавляем проверку heartbeat перед выполнением скрипта игры
-        local wrappedScript = [[
--- Проверка Heartbeat модуля
-if not _G.Catalyst_HeartbeatActive then
-    return
-end
-
-]] .. content .. [[
-
--- Финальная проверка
-if _G.Catalyst_Shutdown then
-    return
-end
-]]
-        loadstring(wrappedScript)()
+    -- Обфусцированная загрузка (затрудняет перехват)
+    local func = loadstring
+    local http = game.HttpGet
+    
+    local s, content = pcall(http, game, _G.ScriptURL)
+    if s and content and #content > 10 then
+        -- Проверка целостности перед выполнением
+        if not content:find("Catalyst") and not content:find("loadstring") then
+            Log("WARNING: Script content seems invalid")
+        end
+        
+        -- Оборачиваем в проверку безопасности
+        local safeCode = [[
+if not _G.Catalyst_HeartbeatActive then return end
+if _G.Catalyst_Shutdown then return end
+]] .. content
+        
+        local execFunc, execErr = func(safeCode)
+        if execFunc then
+            execFunc()
+        else
+            Log("Compile error: " .. tostring(execErr))
+        end
     else
-        Log("ERROR: Failed to download script")
+        Log("Failed to download script")
     end
 end
 
 -- ========================================================
--- 🕵️‍♂️ ОПРЕДЕЛЕНИЕ ИГРЫ
+-- 🕵️ ОПРЕДЕЛЕНИЕ ИГРЫ
 -- ========================================================
 local currentPlaceId = game.PlaceId
 _G.ScriptURL = SupportedGames[currentPlaceId]
 
-local success, info = pcall(function()
-    return MarketplaceService:GetProductInfo(currentPlaceId)
-end)
-if success and info and info.Name ~= "" then
-    _G.GameName = info.Name
-end
+local s, info = pcall(function() return MarketplaceService:GetProductInfo(currentPlaceId) end)
+if s and info and info.Name ~= "" then _G.GameName = info.Name end
 
+-- Фикс для MM2
 if not _G.ScriptURL and (currentPlaceId == 142823291 or game.GameId == 504917579) then
     _G.ScriptURL = SupportedGames[142823291]
     _G.GameName = "Murder Mystery 2"
 end
 
-Log("=== Catalyst Hub ===")
-Log("Place ID: " .. currentPlaceId)
-Log("Game: " .. _G.GameName)
-Log("Supported: " .. tostring(_G.ScriptURL ~= nil))
+Log("Place: " .. currentPlaceId .. " | Game: " .. _G.GameName)
 
 if not _G.ScriptURL then
-    pcall(function()
-        LP:Kick("[Catalyst Hub]\\nGame not supported.\\nPlace ID: " .. currentPlaceId)
-    end)
+    pcall(function() LP:Kick("[Catalyst]\\nGame not supported") end)
     return
 end
 
 -- ========================================================
--- 🔑 АВТО-ВХОД ПО СОХРАНЕННОМУ КЛЮЧУ
+-- 🔑 АВТО-ВХОД
 -- ========================================================
 local savedKey = ""
 pcall(function()
     if isfile and isfile(KeyFileName) then
-        local content = readfile(KeyFileName)
-        if content and content ~= "" then
-            savedKey = content:gsub("%s+", "")
-        end
+        local c = readfile(KeyFileName)
+        if c and c ~= "" then savedKey = c:gsub("%s+", "") end
     end
 end)
 
-local autoValid, keyType, rank = false, nil, nil
 if savedKey ~= "" and #savedKey >= 5 then
-    Log("Checking saved key...")
-    autoValid, keyType, rank = CheckKeyInAllServices(savedKey)
+    local valid, kt, rank = CheckKeyInAllServices(savedKey)
+    if valid then
+        _G.CatalystKeyType = kt
+        _G.CatalystRank = rank
+        LaunchCheatDirectly()
+        return
+    end
 end
 
-if autoValid and keyType and rank then
-    _G.CatalystKeyType = keyType
-    _G.CatalystRank = rank
-    Log("Auto-login success: " .. keyType .. " / " .. rank)
-    LaunchCheatDirectly()
-    return
-else
-    pcall(function()
-        if delfile and isfile(KeyFileName) then
-            delfile(KeyFileName)
-        elseif writefile then
-            writefile(KeyFileName, "")
-        end
-    end)
-end
-
-Log("No valid key found. Launching GUI...")
+pcall(function()
+    if delfile and isfile(KeyFileName) then delfile(KeyFileName) end
+end)
 
 -- ========================================================
--- 🖥️ GUI FLUENT
+-- 🖥️ GUI
 -- ========================================================
 local KeyWindow = Fluent:CreateWindow({
     Title = "Catalyst",
@@ -245,58 +281,65 @@ local KeyWindow = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.RightControl
 })
 
-local KeyTab = KeyWindow:AddTab({ Title = "Verification", Icon = "shield-check" })
+local Tabs = {
+    Verify = KeyWindow:AddTab({ Title = "Verification", Icon = "shield-check" })
+}
+
 local Options = Fluent.Options
 
-KeyTab:AddInput("KeyInput", {
+Tabs.Verify:AddInput("KeyInput", {
     Title = "Activation Key",
     Default = "",
-    Placeholder = "Enter your key here..."
+    Placeholder = "Enter your key..."
 })
 
-KeyTab:AddButton({
+Tabs.Verify:AddButton({
     Title = "Verify Key",
     Callback = function()
-        local enteredKey = Options.KeyInput.Value
-        Fluent:Notify({ Title = "Catalyst", Content = "Checking key...", Duration = 1.5 })
-        task.wait(0.5)
+        local key = Options.KeyInput.Value
+        Fluent:Notify({ Title = "Catalyst", Content = "Checking...", Duration = 1 })
+        task.wait(0.3)
         
-        local valid, kt, r = CheckKeyInAllServices(enteredKey)
-        if valid and kt and r then
+        local valid, kt, rank = CheckKeyInAllServices(key)
+        if valid then
             _G.CatalystKeyType = kt
-            _G.CatalystRank = r
-            Fluent:Notify({ Title = "Access Granted", Content = string.format("Type: %s | Rank: %s", kt, r), Duration = 3 })
-            task.wait(0.8)
+            _G.CatalystRank = rank
+            Fluent:Notify({ Title = "Success", Content = kt .. " | " .. rank, Duration = 2 })
+            task.wait(0.5)
             KeyWindow:Destroy()
-            task.wait(0.2)
+            task.wait(0.1)
             LaunchCheatDirectly()
         else
-            Fluent:Notify({ Title = "Access Denied", Content = "Invalid key", Duration = 4 })
+            Fluent:Notify({ Title = "Denied", Content = "Invalid key", Duration = 3 })
         end
     end
 })
 
-KeyTab:AddButton({
-    Title = "Get Free Key (Copy Link)",
+Tabs.Verify:AddButton({
+    Title = "Get Free Key",
     Callback = function()
         Junkie.service = "Free"
-        local success, link = pcall(Junkie.get_key_link)
-        if success and link then
+        local s, link = pcall(Junkie.get_key_link)
+        if s and link then
             setclipboard(link)
-            Fluent:Notify({ Title = "Link Copied", Content = "Free key link copied", Duration = 2 })
+            Fluent:Notify({ Title = "Copied", Content = "Link in clipboard", Duration = 2 })
         else
-            Fluent:Notify({ Title = "Error", Content = "Failed to get link", Duration = 2 })
+            Fluent:Notify({ Title = "Error", Content = "Try again later", Duration = 2 })
         end
     end
 })
 
 KeyWindow:SelectTab(1)
-Log("GUI ready")`;
+Log("Ready")`;
 
 // ==================== ЭКСПОРТЫ ====================
 export function getLoaderScript() { return loaderScript; }
+
 export function updateLoaderScript(newScript) {
-  if (newScript && newScript.trim().length > 0) { loaderScript = newScript; return true; }
+  if (newScript && newScript.trim().length > 0) {
+    loaderScript = newScript;
+    return true;
+  }
   return false;
 }
 
@@ -313,7 +356,9 @@ export function updateGameInfo(gameId, data) {
     if (data.status) gamesInfo[gameId].status = data.status;
   }
 }
-export function addGameInfo(gameId, name, status) { gamesInfo[gameId] = { name: name || 'Unknown', status: status || 'Undetected' }; }
+export function addGameInfo(gameId, name, status) {
+  gamesInfo[gameId] = { name: name || 'Unknown', status: status || 'Undetected' };
+}
 export function deleteGameInfo(gameId) { delete gamesInfo[gameId]; }
 
 export default async function handler(req, res) {
