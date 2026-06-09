@@ -36,7 +36,6 @@
     .section-reveal { opacity: 0; visibility: hidden; transform: translateY(40px); transition: opacity 0.7s, transform 0.7s, visibility 0s 0.7s; }
     .section-reveal.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.7s, transform 0.7s, visibility 0s 0s; }
     .btn-fixed-width { min-width: 180px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
-    .stat-number { font-variant-numeric: tabular-nums; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #07040f; } ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 3px; }
   </style>
 </head>
@@ -55,7 +54,6 @@
             <span class="text-2xl font-bold gradient-text">CATALYST</span>
           </a>
           <div class="hidden md:flex items-center gap-1">
-            <a href="#stats" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Stats</a>
             <a href="#scripts" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Scripts</a>
             <a href="#kernel" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Kernel</a>
             <a href="#pricing" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Premium</a>
@@ -68,7 +66,6 @@
       </div>
       <div id="mobileMenu" class="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-purple-900/30 hidden">
         <div class="px-6 py-4 space-y-2">
-          <a href="#stats" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Stats</a>
           <a href="#scripts" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Scripts</a>
           <a href="#kernel" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Kernel</a>
           <a href="#pricing" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Premium</a>
@@ -104,44 +101,16 @@
       </div>
     </section>
 
-    <!-- СТАТИСТИКА -->
-    <section id="stats" class="section-reveal max-w-7xl mx-auto px-6 py-24">
-      <div class="bg-cyber-dark/80 border border-purple-900/30 rounded-3xl p-8 md:p-12 backdrop-blur-sm">
-        <h2 class="text-3xl md:text-4xl font-bold gradient-text-static mb-10 text-center">Live Statistics</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div class="group">
-            <div class="text-4xl md:text-5xl font-bold text-purple-400 stat-number" id="statTotalLoads">0</div>
-            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Total Loads</div>
-          </div>
-          <div class="group">
-            <div class="text-4xl md:text-5xl font-bold text-green-400 stat-number" id="statActiveUsers">0</div>
-            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Active Users</div>
-          </div>
-          <div class="group">
-            <div class="text-4xl md:text-5xl font-bold text-yellow-400 stat-number" id="statGames">0</div>
-            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Games Supported</div>
-          </div>
-          <div class="group">
-            <div class="text-4xl md:text-5xl font-bold text-pink-400 stat-number" id="statPremium">0</div>
-            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Premium Users</div>
-          </div>
-        </div>
-        <div class="mt-10 text-center">
-          <div class="inline-flex items-center gap-2 text-purple-400/40 text-xs">
-            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            Updates every 30 seconds
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- SCRIPTS -->
     <section id="scripts" class="section-reveal max-w-7xl mx-auto px-6 py-24">
       <div class="text-center mb-16">
         <h2 class="text-5xl font-black gradient-text-static mb-4">Our Scripts</h2>
         <p class="text-purple-200/60 text-lg max-w-xl mx-auto">Undetected, regularly updated, ready to execute. Choose your game and dominate.</p>
       </div>
-      <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+      <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Карточки будут сгенерированы JS -->
+        <p class="text-center col-span-full text-purple-400/50 py-8">Loading scripts...</p>
+      </div>
     </section>
 
     <!-- KERNEL -->
@@ -218,10 +187,9 @@
   </div>
 
   <script>
-    // ============== ФОН С ТОЧКАМИ ==============
+    // ========== ФОН С ТОЧКАМИ ==========
     function createDotBackground() {
-      const c = document.getElementById('dotBg');
-      if (!c) return;
+      const c = document.getElementById('dotBg'); if (!c) return;
       c.innerHTML = '';
       const f = document.createDocumentFragment();
       for (let i = 0; i < 100; i++) {
@@ -241,7 +209,7 @@
       }, { passive: true });
     }
 
-    // ============== АНИМАЦИИ ==============
+    // ========== АНИМАЦИИ ==========
     function setupAnimations() {
       const n = document.getElementById('navbar');
       if (n) requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add('visible')));
@@ -263,42 +231,53 @@
       }));
     }
 
-    // ============== СТАТИСТИКА ==============
-    async function loadStats() {
-      try {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
-        document.getElementById('statTotalLoads').textContent = (data.totalLoads || 0).toLocaleString();
-        document.getElementById('statActiveUsers').textContent = (data.activeUsers || 0).toLocaleString();
-        document.getElementById('statGames').textContent = (data.games?.length || 0).toLocaleString();
-        const premiumCount = (data.loadsByRank?.Premium || 0) + (data.loadsByRank?.Ultimate || 0);
-        document.getElementById('statPremium').textContent = premiumCount.toLocaleString();
-      } catch (e) { console.error('Stats error:', e); }
-    }
-
-    // ============== СКРИПТЫ ==============
+    // ========== ЗАГРУЗКА ИГР ИЗ API ==========
     async function loadStatuses() {
-      try { const r = await fetch('/api/admin?action=status'); const d = await r.json(); return d.games || []; } catch (e) { return []; }
+      try {
+        const res = await fetch('/api/admin?action=status');
+        if (!res.ok) throw new Error('Server error');
+        const data = await res.json();
+        return data.games || [];
+      } catch (e) {
+        console.error('Failed to load games:', e);
+        return [];
+      }
     }
 
-    function renderScriptCards(statuses) {
-      const c = document.getElementById('scriptsContainer');
-      if (!c || !statuses.length) { c.innerHTML = '<p class="text-center col-span-full text-purple-400/50 py-8">Loading scripts...</p>'; return; }
-      const st = { 'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30', 'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30', 'Patched': 'bg-red-600/20 text-red-400 border-red-500/30' };
-      c.innerHTML = statuses.map(g => {
-        const sc = st[g.status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
-        return `<div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
-          <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
-            <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    function renderScriptCards(games) {
+      const container = document.getElementById('scriptsContainer');
+      if (!container) return;
+
+      if (!games || games.length === 0) {
+        container.innerHTML = '<p class="text-center col-span-full text-purple-400/50 py-8">No scripts available. Check admin panel.</p>';
+        return;
+      }
+
+      const statusStyles = {
+        'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30',
+        'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
+        'Patched': 'bg-red-600/20 text-red-400 border-red-500/30',
+      };
+
+      container.innerHTML = games.map(g => {
+        const sc = statusStyles[g.status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
+        return `
+          <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
+              <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">${g.name || g.game}</h3>
+            <p class="text-purple-200/50 text-sm mb-4">Place ID: ${g.game}</p>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${sc}">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              ${g.status ? g.status.toUpperCase() : 'UNKNOWN'}
+            </span>
           </div>
-          <h3 class="text-xl font-bold mb-2">${g.name}</h3>
-          <p class="text-purple-200/50 text-sm mb-4">Place ID: ${g.game}</p>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${sc}"><span class="w-1.5 h-1.5 rounded-full bg-current"></span>${g.status.toUpperCase()}</span>
-        </div>`;
+        `;
       }).join('');
     }
 
-    // ============== КНОПКИ ==============
+    // ========== КНОПКИ ==========
     function getLoaderScript() {
       return `loadstring(game:HttpGet("${window.location.origin}/api/loader"))()`;
     }
@@ -320,12 +299,21 @@
       b.addEventListener('click', () => window.open('https://discord.gg/YOUR_INVITE_CODE', '_blank'));
     }
 
-    // ============== INIT ==============
+    // ========== ИНИЦИАЛИЗАЦИЯ ==========
     window.addEventListener('load', async () => {
-      createDotBackground(); setupDotsFade(); setupAnimations(); setupMobileMenu(); setupSmoothScroll();
-      loadStats(); setInterval(loadStats, 30000);
-      const statuses = await loadStatuses(); renderScriptCards(statuses);
-      setupCopyButton('copyLoaderBtn'); setupCopyButton('heroCopyBtn'); setupDiscordButton();
+      createDotBackground();
+      setupDotsFade();
+      setupAnimations();
+      setupMobileMenu();
+      setupSmoothScroll();
+
+      // Загружаем статусы и отображаем скрипты
+      const games = await loadStatuses();
+      renderScriptCards(games);
+
+      setupCopyButton('copyLoaderBtn');
+      setupCopyButton('heroCopyBtn');
+      setupDiscordButton();
     });
   </script>
 </body>
