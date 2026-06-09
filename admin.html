@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catalyst Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              purple: '#a855f7',
+              dark: '#0f0b1e',
+              darker: '#07040f',
+              neon: '#d946ef',
+              pink: '#ec4899',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { background: #07040f; }
+    .gradient-text {
+      background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="text-white font-sans min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Заголовок -->
+    <div class="flex items-center justify-between mb-10">
+      <h1 class="text-3xl font-bold gradient-text">Catalyst Admin Panel</h1>
+      <div class="flex gap-4">
+        <input id="passwordInput" type="password" placeholder="Admin password" class="bg-cyber-dark border border-purple-900/50 rounded-lg px-4 py-2 text-white placeholder-purple-400/50 focus:outline-none focus:border-purple-500" />
+        <button id="authBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Authenticate</button>
+      </div>
+    </div>
+
+    <!-- Статус авторизации -->
+    <div id="authStatus" class="mb-6 text-sm"></div>
+
+    <!-- Панель управления статусами игр -->
+    <div id="statusPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
+      <h2 class="text-xl font-bold mb-4">Game Status Management</h2>
+      <div id="gamesList" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
+    </div>
+
+    <!-- Панель обновления скриптов -->
+    <div id="scriptPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
+      <h2 class="text-xl font-bold mb-4">Script Editor</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <select id="scriptGame" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
+          <option value="mm2">Murder Mystery 2</option>
+          <option value="bloxfruits">Blox Fruits</option>
+        </select>
+        <select id="scriptTier" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
+          <option value="free">Free</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+      <textarea id="scriptCode" rows="8" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4"></textarea>
+      <div class="flex gap-4">
+        <button id="updateScriptBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Update Script</button>
+        <button id="rollbackBtn" class="border-2 border-yellow-600 text-yellow-400 hover:bg-yellow-600/20 px-6 py-2 rounded-lg font-semibold transition">Rollback</button>
+      </div>
+    </div>
+
+    <!-- Логи -->
+    <div id="logsPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-4">Launch Logs</h2>
+      <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh Logs</button>
+      <div id="logsContainer" class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead>
+            <tr class="border-b border-purple-900/30 text-purple-300">
+              <th class="py-3 px-4">Timestamp</th>
+              <th class="py-3 px-4">IP</th>
+              <th class="py-3 px-4">Game</th>
+              <th class="py-3 px-4">Tier</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody" class="text-purple-200/70"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let authPassword = '';
+
+    // Сохранение пароля в sessionStorage
+    const savedPass = sessionStorage.getItem('admin_pass');
+    if (savedPass) {
+      document.getElementById('passwordInput').value = savedPass;
+      authenticate(savedPass);
+    }
+
+    document.getElementById('authBtn').addEventListener('click', () => {
+      const pass = document.getElementById('passwordInput').value;
+      if (!pass) return alert('Enter password');
+      sessionStorage.setItem('admin_pass', pass);
+      authenticate(pass);
+    });
+
+    async function authenticate(pass) {
+      authPassword = pass;
+      // Проверяем авторизацию через запрос логов
+      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(pass)}`);
+      if (res.status === 401) {
+        document.getElementById('authStatus').innerHTML = '<span class="text-red-400">Invalid password</span>';
+        hidePanels();
+        return;
+      }
+      document.getElementById('authStatus').innerHTML = '<span class="text-green-400">Authenticated</span>';
+      showPanels();
+      loadAllData();
+    }
+
+    function hidePanels() {
+      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+    }
+
+    function showPanels() {
+      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
+        document.getElementById(id).classList.remove('hidden');
+      });
+    }
+
+    async function apiCall(body) {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, password: authPassword }),
+      });
+      return res.json();
+    }
+
+    async function loadAllData() {
+      // Загружаем статусы
+      const statusRes = await fetch('/api/admin?action=status');
+      const statusData = await statusRes.json();
+      renderGamesList(statusData.games || []);
+
+      // Загружаем логи
+      loadLogs();
+    }
+
+    function renderGamesList(games) {
+      const container = document.getElementById('gamesList');
+      container.innerHTML = games.map(g => `
+        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-4 flex flex-col items-center">
+          <span class="font-bold text-lg">${g.game}</span>
+          <select class="statusSelect mt-2 bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm text-white" data-game="${g.game}">
+            <option value="Undetected" ${g.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
+            <option value="On Update" ${g.status === 'On Update' ? 'selected' : ''}>On Update</option>
+            <option value="Patched" ${g.status === 'Patched' ? 'selected' : ''}>Patched</option>
+          </select>
+        </div>
+      `).join('');
+
+      // Обработчики изменения статуса
+      document.querySelectorAll('.statusSelect').forEach(select => {
+        select.addEventListener('change', async (e) => {
+          const game = e.target.dataset.game;
+          const status = e.target.value;
+          const result = await apiCall({ action: 'updateStatus', game, status });
+          if (result.success) {
+            alert(`Status for ${game} updated to ${status}`);
+          }
+        });
+      });
+    }
+
+    async function loadLogs() {
+      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(authPassword)}`);
+      const data = await res.json();
+      const tbody = document.getElementById('logsBody');
+      if (!data.logs || data.logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4 px-4 text-purple-400/50">No logs yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.logs.slice().reverse().map(log => `
+        <tr class="border-b border-purple-900/20">
+          <td class="py-3 px-4">${new Date(log.timestamp).toLocaleString()}</td>
+          <td class="py-3 px-4">${log.ip}</td>
+          <td class="py-3 px-4">${log.game}</td>
+          <td class="py-3 px-4 capitalize">${log.tier}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
+
+    document.getElementById('updateScriptBtn').addEventListener('click', async () => {
+      const game = document.getElementById('scriptGame').value;
+      const tier = document.getElementById('scriptTier').value;
+      const code = document.getElementById('scriptCode').value;
+      if (!code.trim()) return alert('Enter script code');
+      const result = await apiCall({ action: 'updateScript', game, tier, code });
+      if (result.success) {
+        alert('Script updated successfully!');
+      } else {
+        alert('Error: ' + (result.error || 'Unknown'));
+      }
+    });
+
+    document.getElementById('rollbackBtn').addEventListener('click', async () => {
+      const game = document.getElementById('scriptGame').value;
+      const tier = document.getElementById('scriptTier').value;
+      const result = await apiCall({ action: 'rollback', game, tier });
+      if (result.success) {
+        document.getElementById('scriptCode').value = result.code;
+        alert('Rolled back to previous version!');
+      } else {
+        alert('Error: ' + (result.error || 'Unknown'));
+      }
+    });
+  </script>
+</body>
+</html>
