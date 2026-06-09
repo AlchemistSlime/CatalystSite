@@ -1,16 +1,21 @@
 // api/admin.js
+// Единый обработчик: и админка, и загрузчик, и статусы
+
 const ADMIN_PASSWORD = 'admin123';
 
+// Хранилище игр (редактируется через админку)
 let gamesInfo = {
   '286090429': { name: 'Arsenal', status: 'Undetected' },
   '142823291': { name: 'Murder Mystery 2', status: 'Undetected' },
   '17625359962': { name: 'Rivals', status: 'Undetected' },
 };
 
+// Генерация Lua-скрипта с актуальным списком игр
 function buildLoaderScript(games) {
   const entries = Object.entries(games);
   const gameTableLines = entries.map(([id, data]) => {
-    return `    [${id}] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/Catalyst${data.name.replace(/ /g, '')}.lua"`;
+    const cleanName = data.name.replace(/ /g, '');
+    return `    [${id}] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/Catalyst${cleanName}.lua"`;
   }).join(',\n');
 
   return `-- ========================================================
@@ -136,13 +141,14 @@ KeyWindow:SelectTab(1)
 Log("Ready")`;
 }
 
+// Текущий загрузочный скрипт
 let currentLoader = buildLoaderScript(gamesInfo);
 
-// Простейшие логи
+// Логи
 let launchLogs = [];
 let adminLogs = [];
 
-function isAdmin(p) { return p === ADMIN_PASSWORD; }
+function isAdmin(password) { return password === ADMIN_PASSWORD; }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -153,20 +159,28 @@ export default async function handler(req, res) {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
 
   try {
-    // === GET ===
+    // ======================= GET =======================
     if (req.method === 'GET') {
       const { action, password } = req.query;
 
-      // Публичные
+      // === Публичные ===
       if (action === 'status') {
         return res.status(200).json({ games: Object.entries(gamesInfo).map(([id, d]) => ({ game: id, ...d })) });
       }
+
       if (action === 'loader') {
+        // Проверка User-Agent для скрипта
+        const ua = req.headers['user-agent'] || '';
+        if (!ua.includes('Roblox')) {
+          return res.status(403).send('Access Denied: Roblox client required');
+        }
+        // Логируем запуск
+        launchLogs.push({ timestamp: new Date().toISOString(), ip: clientIp, game: 'loader', gameName: 'Universal Loader' });
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.status(200).send(currentLoader);
       }
 
-      // Требуют пароль
+      // === Требуют пароль ===
       if (!isAdmin(password)) return res.status(401).json({ error: 'Unauthorized' });
 
       if (action === 'logs') {
@@ -178,14 +192,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid action' });
     }
 
-    // === POST ===
+    // ======================= POST =======================
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       const { action, password, game, name, status, loaderScript } = body;
 
-      // Логирование запусков (публично)
+      // Логирование запусков (публично, вызывается из loader'а)
       if (action === 'log') {
-        launchLogs.push({ timestamp: new Date().toISOString(), ip: clientIp, game, gameName: name });
+        launchLogs.push({ timestamp: new Date().toISOString(), ip: clientIp, game, gameName: name || '' });
         return res.status(200).json({ success: true });
       }
 
