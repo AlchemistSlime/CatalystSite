@@ -1,16 +1,7 @@
 // api/admin.js
-// Админ-панель: управление играми, загрузчиком, логами
+// Админ-панель Catalyst Hub
 
 const ADMIN_PASSWORD = 'admin123';
-
-// Импортируем функции из loader.js (работает в Vercel serverless)
-let loaderModule = null;
-async function getLoaderModule() {
-  if (!loaderModule) {
-    loaderModule = await import('./loader.js');
-  }
-  return loaderModule;
-}
 
 // Логи
 let launchLogs = [];
@@ -46,29 +37,30 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-  const loader = await getLoaderModule();
 
   try {
+    // Динамический импорт loader.js
+    const loaderModule = await import('./loader.js');
+
     // ========== GET ==========
     if (req.method === 'GET') {
       const { action, password } = req.query;
 
       // Публичные эндпоинты
       if (action === 'status') {
-        const scripts = loader.getGameScripts();
+        const games = loaderModule.getGamesInfo();
         return res.status(200).json({
-          games: Object.entries(scripts).map(([id, data]) => ({
+          games: Object.entries(games).map(([id, data]) => ({
             game: id,
-            name: data.name,
-            url: data.url,
-            status: data.status,
+            ...data,
           })),
         });
       }
 
       if (action === 'loader') {
+        // Отдаём текущий загрузчик (публично)
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        return res.status(200).send(loader.getLoaderScript());
+        return res.status(200).send(loaderModule.getLoaderScript());
       }
 
       // Требуют пароль
@@ -81,7 +73,7 @@ export default async function handler(req, res) {
       }
 
       if (action === 'getGames') {
-        return res.status(200).json({ games: loader.getGameScripts() });
+        return res.status(200).json({ games: loaderModule.getGamesInfo() });
       }
 
       return res.status(400).json({ error: 'Invalid action' });
@@ -90,7 +82,7 @@ export default async function handler(req, res) {
     // ========== POST ==========
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { action, password, game, name, url, status, loaderScript, ip, gameName } = body;
+      const { action, password, game, name, status, loaderScript, ip, gameName } = body;
 
       // Логирование запусков (без пароля)
       if (action === 'log') {
@@ -105,27 +97,27 @@ export default async function handler(req, res) {
 
       switch (action) {
         case 'updateGame':
-          loader.updateGameScript(game, url, name, status);
-          addAdminLog('updateGame', `Game: ${game}, Name: ${name}, URL: ${url}, Status: ${status}`, clientIp);
+          loaderModule.updateGameInfo(game, { name, status });
+          addAdminLog('updateGame', `Game: ${game}, Name: ${name}, Status: ${status}`, clientIp);
           return res.status(200).json({ success: true });
 
         case 'addGame':
-          loader.addGameScript(game, name, url, status);
+          loaderModule.addGameInfo(game, name, status);
           addAdminLog('addGame', `Game: ${game}, Name: ${name}`, clientIp);
           return res.status(200).json({ success: true });
 
         case 'deleteGame':
-          loader.deleteGameScript(game);
+          loaderModule.deleteGameInfo(game);
           addAdminLog('deleteGame', `Game: ${game}`, clientIp);
           return res.status(200).json({ success: true });
 
         case 'updateLoader':
-          loader.updateLoaderScript(loaderScript);
-          addAdminLog('updateLoader', 'Universal loader updated', clientIp);
-          return res.status(200).json({ success: true });
-
-        case 'getLoader':
-          return res.status(200).json({ loader: loader.getLoaderScript() });
+          const updated = loaderModule.updateLoaderScript(loaderScript);
+          if (updated) {
+            addAdminLog('updateLoader', 'Universal loader updated', clientIp);
+            return res.status(200).json({ success: true });
+          }
+          return res.status(400).json({ error: 'Empty loader script' });
 
         default:
           return res.status(400).json({ error: 'Invalid action' });
