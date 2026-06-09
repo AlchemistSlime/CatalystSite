@@ -1,88 +1,25 @@
 // api/loader.js
-// Catalyst Hub — оптимизированный загрузчик
+// Catalyst Hub Loader — простая рабочая версия
 
-let stats = {
-  totalLoads: 0,
-};
+export default async function handler(req, res) {
+  const ua = req.headers['user-agent'] || '';
+  
+  // Проверяем, что запрос от Roblox
+  if (!ua.includes('Roblox')) {
+    return res.status(403).send('Access Denied: Roblox client required');
+  }
 
-let loaderScript = `-- ========================================================
--- CATALYST HUB - OPTIMIZED LOADER
+  // Lua-скрипт, который увидят пользователи
+  const loaderScript = `-- ========================================================
+-- CATALYST HUB - SIMPLE LOADER (v1.0)
 -- ========================================================
 
--- ========================================================
--- 🛡️ ЗАЩИТА: Анти-дамп
--- ========================================================
-local function AntiDump()
-    pcall(function()
-        local hidden = {}
-        local mt = {
-            __index = function(t, k)
-                if hidden[k] then return hidden[k] end
-                return rawget(t, k)
-            end,
-            __newindex = function(t, k, v)
-                if type(k) == "string" and (k:find("Catalyst") or k:find("HB_")) then
-                    hidden[k] = v
-                    return
-                end
-                rawset(t, k, v)
-            end
-        }
-        setmetatable(_G, mt)
-    end)
-end
-
--- ========================================================
--- 🛡️ ЗАЩИТА: Анти-декомпиляция
--- ========================================================
-local function AntiDecompile()
-    if game:GetService("RunService"):IsStudio() then
-        while true do end
-    end
-    
-    local bad = {"dex", "Decompiler", "Dumper", "SaveInstance", "DarkDex", "ScriptDumper", "RemoteSpy"}
-    for _, name in ipairs(bad) do
-        pcall(function()
-            local obj = game:GetService("CoreGui"):FindFirstChild(name)
-            if obj then obj:Destroy() end
-        end)
-    end
-    
-    return false
-end
-
-AntiDump()
-if AntiDecompile() then return end
-
--- ========================================================
--- 🔐 ЗАГРУЗКА HEARTBEAT МОДУЛЯ С GITHUB
--- ========================================================
-local HeartbeatModule = nil
-
-pcall(function()
-    local code = game:HttpGet("https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystHeartbeat.lua")
-    if code and #code > 100 then
-        local result = loadstring(code)()
-        if type(result) == "table" and result.IsValid and result.IsValid() then
-            HeartbeatModule = result
-        end
-    end
-end)
-
-if not HeartbeatModule then return end
-
--- ========================================================
--- 📦 СЕРВИСЫ
--- ========================================================
+-- 📦 Сервисы
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 
--- ========================================================
--- 🔥 БИБЛИОТЕКИ
--- ========================================================
+-- 🔥 Библиотеки
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local Junkie = loadstring(game:HttpGet("https://jnkie.com/sdk/library.lua"))()
 
@@ -91,34 +28,25 @@ Junkie.provider = "Alchemist Hub"
 
 local KeyFileName = "Catalyst_Key.txt"
 
--- ========================================================
--- 🌐 БАЗА ИГР
--- ========================================================
+-- 🌐 База игр
 local SupportedGames = {
-    [286090429] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/refs/heads/main/CatalystArsenal.lua",
-    [142823291] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/refs/heads/main/CatalystMM2.lua",
-    [17625359962] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/refs/heads/main/CatalystRivals.lua"
+    [286090429] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystArsenal.lua",
+    [142823291] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystMM2.lua",
+    [17625359962] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystRivals.lua"
 }
 
--- ========================================================
--- 🏆 ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
--- ========================================================
+-- 🏆 Глобальные переменные
 _G.CatalystKeyType = "Unknown"
 _G.CatalystRank = "Standard"
 _G.ScriptURL = nil
 _G.GameName = "Unknown Game"
-_G.Catalyst_Loaded = os.time()
 
--- ========================================================
--- 📝 LOGGING
--- ========================================================
+-- 📝 Логи
 local function Log(msg)
     print("[Catalyst] " .. tostring(msg))
 end
 
--- ========================================================
--- 🔑 ПРОВЕРКА КЛЮЧА
--- ========================================================
+-- 🔑 Проверка ключа
 local function CheckKeyInAllServices(key)
     if type(key) == "string" then key = key:gsub("%s+", "") end
     if not key or #key < 5 then return false, nil, nil end
@@ -132,16 +60,9 @@ local function CheckKeyInAllServices(key)
     for _, svc in ipairs(services) do
         Junkie.service = svc.name
         local s, r = pcall(function() return Junkie.check_key(key) end)
-        
         if s and r and type(r) == "table" and r.valid then
             pcall(function() if writefile then writefile(KeyFileName, key) end end)
-            Log("Key: " .. svc.name .. " | " .. svc.keyType .. " | " .. svc.rank)
-            
-            -- Отправляем heartbeat
-            if HeartbeatModule and HeartbeatModule.SendHeartbeat then
-                HeartbeatModule.SendHeartbeat("key_verified")
-            end
-            
+            Log("Key: " .. svc.keyType .. " | " .. svc.rank)
             return true, svc.keyType, svc.rank
         end
     end
@@ -149,81 +70,24 @@ local function CheckKeyInAllServices(key)
     return false, nil, nil
 end
 
--- ========================================================
--- ✅ ПРОВЕРКА БЕЗОПАСНОСТИ ПЕРЕД ЗАПУСКОМ
--- ========================================================
-local function SecurityCheck()
-    -- Проверяем heartbeat модуль
-    if not HeartbeatModule or not HeartbeatModule.IsValid() then
-        return false
-    end
-    
-    -- Проверяем что глобальные переменные не подменили
-    if not _G.Catalyst_HeartbeatActive then
-        return false
-    end
-    
-    -- Проверяем что скрипт не был отключён
-    if _G.Catalyst_Shutdown then
-        return false
-    end
-    
-    -- Проверяем что мы в игре (не в студии)
-    if RunService:IsStudio() then
-        return false
-    end
-    
-    return true
-end
-
--- ========================================================
--- 🚀 ЗАПУСК СКРИПТА ИГРЫ
--- ========================================================
+-- 🚀 Запуск скрипта игры
 local function LaunchCheatDirectly()
-    if not SecurityCheck() then
-        Log("Security check failed")
-        return
-    end
-    
-    Log("Loading " .. _G.GameName)
-    Log("Key: " .. _G.CatalystKeyType .. " | Rank: " .. _G.CatalystRank)
+    Log("Launching " .. _G.GameName .. " | " .. _G.CatalystKeyType .. " | " .. _G.CatalystRank)
     
     if not _G.ScriptURL then
-        Log("ERROR: No script URL")
+        Log("ERROR: Script URL not found")
         return
     end
     
-    -- Обфусцированная загрузка (затрудняет перехват)
-    local func = loadstring
-    local http = game.HttpGet
-    
-    local s, content = pcall(http, game, _G.ScriptURL)
-    if s and content and #content > 10 then
-        -- Проверка целостности перед выполнением
-        if not content:find("Catalyst") and not content:find("loadstring") then
-            Log("WARNING: Script content seems invalid")
-        end
-        
-        -- Оборачиваем в проверку безопасности
-        local safeCode = [[
-if not _G.Catalyst_HeartbeatActive then return end
-if _G.Catalyst_Shutdown then return end
-]] .. content
-        
-        local execFunc, execErr = func(safeCode)
-        if execFunc then
-            execFunc()
-        else
-            Log("Compile error: " .. tostring(execErr))
-        end
+    local success, content = pcall(game.HttpGet, game, _G.ScriptURL)
+    if success and content and #content > 10 then
+        loadstring(content)()
     else
-        Log("Failed to download script")
+        Log("ERROR: Failed to download script")
     end
 end
 
--- ========================================================
--- 🕵️ ОПРЕДЕЛЕНИЕ ИГРЫ
--- ========================================================
+-- 🕵️ Определение игры
 local currentPlaceId = game.PlaceId
 _G.ScriptURL = SupportedGames[currentPlaceId]
 
@@ -243,9 +107,7 @@ if not _G.ScriptURL then
     return
 end
 
--- ========================================================
--- 🔑 АВТО-ВХОД
--- ========================================================
+-- 🔑 Авто-вход
 local savedKey = ""
 pcall(function()
     if isfile and isfile(KeyFileName) then
@@ -264,13 +126,9 @@ if savedKey ~= "" and #savedKey >= 5 then
     end
 end
 
-pcall(function()
-    if delfile and isfile(KeyFileName) then delfile(KeyFileName) end
-end)
+pcall(function() if delfile and isfile(KeyFileName) then delfile(KeyFileName) end end)
 
--- ========================================================
 -- 🖥️ GUI
--- ========================================================
 local KeyWindow = Fluent:CreateWindow({
     Title = "Catalyst",
     SubTitle = "Key System",
@@ -281,19 +139,16 @@ local KeyWindow = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.RightControl
 })
 
-local Tabs = {
-    Verify = KeyWindow:AddTab({ Title = "Verification", Icon = "shield-check" })
-}
-
+local KeyTab = KeyWindow:AddTab({ Title = "Verification", Icon = "shield-check" })
 local Options = Fluent.Options
 
-Tabs.Verify:AddInput("KeyInput", {
+KeyTab:AddInput("KeyInput", {
     Title = "Activation Key",
     Default = "",
     Placeholder = "Enter your key..."
 })
 
-Tabs.Verify:AddButton({
+KeyTab:AddButton({
     Title = "Verify Key",
     Callback = function()
         local key = Options.KeyInput.Value
@@ -315,7 +170,7 @@ Tabs.Verify:AddButton({
     end
 })
 
-Tabs.Verify:AddButton({
+KeyTab:AddButton({
     Title = "Get Free Key",
     Callback = function()
         Junkie.service = "Free"
@@ -323,8 +178,6 @@ Tabs.Verify:AddButton({
         if s and link then
             setclipboard(link)
             Fluent:Notify({ Title = "Copied", Content = "Link in clipboard", Duration = 2 })
-        else
-            Fluent:Notify({ Title = "Error", Content = "Try again later", Duration = 2 })
         end
     end
 })
@@ -332,41 +185,6 @@ Tabs.Verify:AddButton({
 KeyWindow:SelectTab(1)
 Log("Ready")`;
 
-// ==================== ЭКСПОРТЫ ====================
-export function getLoaderScript() { return loaderScript; }
-
-export function updateLoaderScript(newScript) {
-  if (newScript && newScript.trim().length > 0) {
-    loaderScript = newScript;
-    return true;
-  }
-  return false;
-}
-
-const gamesInfo = {
-  '286090429': { name: 'Arsenal', status: 'Undetected' },
-  '142823291': { name: 'Murder Mystery 2', status: 'Undetected' },
-  '17625359962': { name: 'Rivals', status: 'Undetected' },
-};
-
-export function getGamesInfo() { return gamesInfo; }
-export function updateGameInfo(gameId, data) {
-  if (gamesInfo[gameId]) {
-    if (data.name) gamesInfo[gameId].name = data.name;
-    if (data.status) gamesInfo[gameId].status = data.status;
-  }
-}
-export function addGameInfo(gameId, name, status) {
-  gamesInfo[gameId] = { name: name || 'Unknown', status: status || 'Undetected' };
-}
-export function deleteGameInfo(gameId) { delete gamesInfo[gameId]; }
-
-export default async function handler(req, res) {
-  const ua = req.headers['user-agent'] || '';
-  if (!ua.includes('Roblox')) {
-    return res.status(403).send('Access Denied: Roblox client required');
-  }
-  stats.totalLoads++;
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   return res.status(200).send(loaderScript);
 }
