@@ -315,4 +315,14 @@
 
     // Logs
     document.getElementById('refreshLogsBtn').addEventListener('click', async () => {
-      const data = await apiGet('
+      const data = await apiGet('logs');
+      renderLogs(data.launchLogs || [], 'logsBody', ['timestamp', 'ip', 'game', 'tier']);
+    });
+
+    document.getElementById('refreshAdminLogsBtn').addEventListener('click', async () => {
+      const data = await apiGet('logs');
+      renderLogs(data.adminLogs || [], 'adminLogsBody', ['timestamp', 'ip', 'action', 'details']);
+    });
+  </script>
+</body>
+</html>
