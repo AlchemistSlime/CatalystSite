@@ -10,18 +10,7 @@
       theme: {
         extend: {
           colors: {
-            cyber: {
-              purple: '#a855f7',
-              dark: '#0f0b1e',
-              darker: '#07040f',
-              neon: '#d946ef',
-              pink: '#ec4899',
-              accent: '#7c3aed',
-            },
-          },
-          fontFamily: {
-            mono: ['"JetBrains Mono"', 'monospace'],
-            sans: ['Inter', 'sans-serif'],
+            cyber: { purple: '#a855f7', dark: '#0f0b1e', darker: '#07040f', neon: '#d946ef', pink: '#ec4899', accent: '#7c3aed' },
           },
         },
       },
@@ -29,211 +18,57 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-    .gradient-text {
-      background: linear-gradient(135deg, #d946ef, #a855f7, #7c3aed, #ec4899);
-      background-size: 200% 200%;
-      animation: gradientShift 4s ease-in-out infinite;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .gradient-text-static {
-      background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .btn-glow {
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .btn-glow:hover {
-      box-shadow: 0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .card-hover {
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .card-hover:hover {
-      transform: translateY(-8px);
-      border-color: rgba(168, 85, 247, 0.6);
-      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
-    }
-
-    /* Фон с точками */
-    .dot-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-      background: #07040f;
-    }
-
-    .dot {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(168, 85, 247, 0.4);
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(139, 92, 246, 0.3);
-      transition: opacity 0.5s ease-out;
-      will-change: transform, opacity;
-    }
-
-    @keyframes dotDrift {
-      0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0.4;
-      }
-      30% {
-        opacity: 0.7;
-      }
-      60% {
-        opacity: 0.5;
-      }
-      100% {
-        transform: translateY(-100vh) translateX(70px);
-        opacity: 0;
-      }
-    }
-
-    @keyframes dotPulse {
-      0%, 100% { transform: scale(1); opacity: 0.4; }
-      50% { transform: scale(1.8); opacity: 0.8; }
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-
-    /* Анимации появления */
-    .animate-hero {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  visibility 0s 0.8s;
-    }
-
-    .animate-hero.visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  visibility 0s 0s;
-    }
-
-    .animate-nav {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-20px);
-      transition: opacity 0.5s ease-out,
-                  transform 0.5s ease-out,
-                  visibility 0s 0.5s;
-    }
-
-    .animate-nav.visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      transition: opacity 0.5s ease-out,
-                  transform 0.5s ease-out,
-                  visibility 0s 0s;
-    }
-
-    .section-reveal {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(40px);
-      transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  visibility 0s 0.7s;
-    }
-
-    .section-reveal.visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-      transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  visibility 0s 0s;
-    }
-
-    /* Фиксация ширины кнопки при анимации */
-    .btn-fixed-width {
-      min-width: 160px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
-    }
-
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #07040f;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #a855f7, #7c3aed);
-      border-radius: 3px;
-    }
+    .gradient-text { background: linear-gradient(135deg, #d946ef, #a855f7, #7c3aed, #ec4899); background-size: 200% 200%; animation: gradientShift 4s ease-in-out infinite; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-static { background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .btn-glow { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); transition: all 0.3s ease; }
+    .btn-glow:hover { box-shadow: 0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4); transform: translateY(-2px); }
+    .card-hover { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .card-hover:hover { transform: translateY(-8px); border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2); }
+    .dot-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; background: #07040f; }
+    .dot { position: absolute; border-radius: 50%; background: rgba(168, 85, 247, 0.4); box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(139, 92, 246, 0.3); will-change: transform, opacity; }
+    @keyframes dotDrift { 0% { transform: translateY(0) translateX(0); opacity: 0.4; } 30% { opacity: 0.7; } 60% { opacity: 0.5; } 100% { transform: translateY(-100vh) translateX(70px); opacity: 0; } }
+    @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.8); opacity: 0.8; } }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .animate-hero { opacity: 0; visibility: hidden; transform: translateY(30px); transition: opacity 0.8s, transform 0.8s, visibility 0s 0.8s; }
+    .animate-hero.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.8s, transform 0.8s, visibility 0s 0s; }
+    .animate-nav { opacity: 0; visibility: hidden; transform: translateY(-20px); transition: opacity 0.5s, transform 0.5s, visibility 0s 0.5s; }
+    .animate-nav.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.5s, transform 0.5s, visibility 0s 0s; }
+    .section-reveal { opacity: 0; visibility: hidden; transform: translateY(40px); transition: opacity 0.7s, transform 0.7s, visibility 0s 0.7s; }
+    .section-reveal.visible { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 0.7s, transform 0.7s, visibility 0s 0s; }
+    .btn-fixed-width { min-width: 180px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+    .stat-number { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #07040f; } ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 3px; }
   </style>
 </head>
 <body class="bg-cyber-darker text-white font-sans min-h-screen relative">
-
-  <!-- Фон с точками -->
   <div class="dot-bg" id="dotBg"></div>
-
-  <!-- Основной контент -->
   <div class="relative z-10">
 
-    <!-- Навигация -->
+    <!-- НАВИГАЦИЯ -->
     <nav id="navbar" class="animate-nav fixed top-0 left-0 right-0 z-50">
       <div class="bg-cyber-dark/80 backdrop-blur-xl border-b border-purple-900/30">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="#" class="flex items-center gap-3 group">
             <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <span class="text-2xl font-bold gradient-text">CATALYST</span>
           </a>
-
           <div class="hidden md:flex items-center gap-1">
+            <a href="#stats" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Stats</a>
             <a href="#scripts" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Scripts</a>
             <a href="#kernel" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Kernel</a>
             <a href="#pricing" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Premium</a>
           </div>
-
-          <button id="copyLoaderBtn" class="btn-glow bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-fixed-width">
-            Copy Loader
-          </button>
-
+          <button id="copyLoaderBtn" class="btn-glow bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-fixed-width">Copy Loader</button>
           <button id="mobileMenuBtn" class="md:hidden p-2 text-purple-300 hover:text-white transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
         </div>
       </div>
-
       <div id="mobileMenu" class="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-purple-900/30 hidden">
         <div class="px-6 py-4 space-y-2">
+          <a href="#stats" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Stats</a>
           <a href="#scripts" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Scripts</a>
           <a href="#kernel" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Kernel</a>
           <a href="#pricing" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Premium</a>
@@ -241,7 +76,7 @@
       </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- HERO -->
     <section id="hero" class="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-20">
       <div class="max-w-4xl">
         <div class="animate-hero" id="heroTitle">
@@ -258,135 +93,121 @@
           </p>
         </div>
         <div class="flex flex-wrap gap-5 justify-center animate-hero" id="heroBtns">
-          <button id="heroCopyBtn" class="btn-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 btn-fixed-width">
-            Copy Loader
-          </button>
-          <button id="joinDiscordBtn" class="border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 backdrop-blur-sm btn-fixed-width">
-            Join Our Community
-          </button>
+          <button id="heroCopyBtn" class="btn-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 btn-fixed-width">Copy Loader</button>
+          <button id="joinDiscordBtn" class="border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 backdrop-blur-sm btn-fixed-width">Join Discord</button>
         </div>
-
         <div class="mt-20 animate-hero" id="scrollIndicator">
           <div class="animate-bounce">
-            <svg class="w-8 h-8 mx-auto text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <svg class="w-8 h-8 mx-auto text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </div>
-          <p class="text-purple-400/60 text-sm mt-3">Scroll to explore</p>
         </div>
       </div>
     </section>
 
-    <!-- Секция "Our Scripts" -->
+    <!-- СТАТИСТИКА -->
+    <section id="stats" class="section-reveal max-w-7xl mx-auto px-6 py-24">
+      <div class="bg-cyber-dark/80 border border-purple-900/30 rounded-3xl p-8 md:p-12 backdrop-blur-sm">
+        <h2 class="text-3xl md:text-4xl font-bold gradient-text-static mb-10 text-center">Live Statistics</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div class="group">
+            <div class="text-4xl md:text-5xl font-bold text-purple-400 stat-number" id="statTotalLoads">0</div>
+            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Total Loads</div>
+          </div>
+          <div class="group">
+            <div class="text-4xl md:text-5xl font-bold text-green-400 stat-number" id="statActiveUsers">0</div>
+            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Active Users</div>
+          </div>
+          <div class="group">
+            <div class="text-4xl md:text-5xl font-bold text-yellow-400 stat-number" id="statGames">0</div>
+            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Games Supported</div>
+          </div>
+          <div class="group">
+            <div class="text-4xl md:text-5xl font-bold text-pink-400 stat-number" id="statPremium">0</div>
+            <div class="text-purple-300/50 text-sm mt-3 group-hover:text-purple-300 transition">Premium Users</div>
+          </div>
+        </div>
+        <div class="mt-10 text-center">
+          <div class="inline-flex items-center gap-2 text-purple-400/40 text-xs">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            Updates every 30 seconds
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCRIPTS -->
     <section id="scripts" class="section-reveal max-w-7xl mx-auto px-6 py-24">
       <div class="text-center mb-16">
         <h2 class="text-5xl font-black gradient-text-static mb-4">Our Scripts</h2>
-        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
-          Undetected, regularly updated, ready to execute. Choose your game and dominate.
-        </p>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">Undetected, regularly updated, ready to execute. Choose your game and dominate.</p>
       </div>
       <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
     </section>
 
-    <!-- Секция Catalyst Kernel -->
+    <!-- KERNEL -->
     <section id="kernel" class="section-reveal py-24 relative">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent"></div>
       <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
-        <div class="inline-block px-6 py-2 bg-purple-600/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium mb-8 backdrop-blur-sm">
-          IN DEVELOPMENT
-        </div>
-        <h2 class="text-6xl font-black mb-6">
-          Catalyst <span class="gradient-text">Kernel</span>
-        </h2>
-        <p class="text-purple-200/60 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-          Our proprietary Level 8 executor. Built from scratch with Lua 5.1/5.2 support,
-          unparalleled stability, and zero detection vectors.
-        </p>
+        <div class="inline-block px-6 py-2 bg-purple-600/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium mb-8 backdrop-blur-sm">IN DEVELOPMENT</div>
+        <h2 class="text-6xl font-black mb-6">Catalyst <span class="gradient-text">Kernel</span></h2>
+        <p class="text-purple-200/60 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">Our proprietary Level 8 executor with Lua 5.1/5.2 support, unparalleled stability, and zero detection vectors.</p>
         <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
-            <div class="text-purple-400 text-2xl font-bold mb-2">100% UNC</div>
-            <p class="text-purple-200/50 text-sm">Maximum script compatibility with full Lua environment.</p>
-          </div>
-          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
-            <div class="text-purple-400 text-2xl font-bold mb-2">Instant Injection</div>
-            <p class="text-purple-200/50 text-sm">Zero-delay script execution without crashing.</p>
-          </div>
-          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
-            <div class="text-purple-400 text-2xl font-bold mb-2">Undetected</div>
-            <p class="text-purple-200/50 text-sm">Advanced anti-detection bypassing Byfron/Hyperion.</p>
-          </div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">100% UNC</div><p class="text-purple-200/50 text-sm">Full Lua environment compatibility.</p></div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">Instant Injection</div><p class="text-purple-200/50 text-sm">Zero-delay execution without crashing.</p></div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm"><div class="text-purple-400 text-2xl font-bold mb-2">Undetected</div><p class="text-purple-200/50 text-sm">Bypasses Byfron/Hyperion.</p></div>
         </div>
       </div>
     </section>
 
-    <!-- Секция Pricing -->
+    <!-- PRICING -->
     <section id="pricing" class="section-reveal max-w-7xl mx-auto px-6 py-24">
       <div class="text-center mb-16">
         <h2 class="text-5xl font-black gradient-text-static mb-4">Choose Your Power</h2>
-        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
-          Want to be the leader of every server? Unlock Premium and access exclusive scripts, priority support, and early Kernel access.
-        </p>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">Want to be the leader of every server? Unlock Premium and dominate.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <!-- Standard -->
         <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
           <h3 class="text-2xl font-bold mb-1">Standard</h3>
           <p class="text-purple-300/60 text-sm mb-8">Free forever</p>
-          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All free scripts</li>
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Basic features</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Community Discord</li>
             <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No premium scripts</li>
-            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No priority support</li>
           </ul>
-          <button class="mt-auto border-2 border-purple-500/50 text-purple-300 px-6 py-3 rounded-full font-semibold text-sm cursor-default">
-            Current Plan
-          </button>
+          <button class="mt-auto border-2 border-purple-500/50 text-purple-300 px-6 py-3 rounded-full font-semibold text-sm cursor-default">Current Plan</button>
         </div>
-        <!-- Premium (Popular) -->
         <div class="card-hover bg-gradient-to-b from-purple-900/40 to-cyber-dark/90 border-2 border-purple-500 rounded-2xl p-8 flex flex-col items-center text-center transform md:scale-105 relative">
-          <div class="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">
-            MOST POPULAR
-          </div>
+          <div class="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">MOST POPULAR</div>
           <h3 class="text-2xl font-bold mb-1 mt-2">Premium</h3>
           <p class="text-purple-300/60 text-sm mb-8">$9.99 / month</p>
-          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Standard features</li>
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All premium scripts</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Aimbot, ESP, Auto Farm</li>
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Priority support</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel early access</li>
           </ul>
-          <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-6 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 btn-glow text-center">
-            Buy Premium
-          </a>
+          <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-6 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 btn-glow text-center">Buy Premium</a>
         </div>
-        <!-- Ultimate -->
         <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
           <h3 class="text-2xl font-bold mb-1">Ultimate</h3>
           <p class="text-purple-300/60 text-sm mb-8">$19.99 / month</p>
-          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm w-full">
             <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Premium features</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Exclusive Ultimate scripts</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Custom script requests</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Direct developer chat</li>
-            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel guaranteed access</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Custom scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Dev chat</li>
           </ul>
-          <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto w-full border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 text-center">
-            Buy Ultimate
-          </a>
+          <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto w-full border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 text-center">Buy Ultimate</a>
         </div>
       </div>
     </section>
 
-    <!-- Футер -->
+    <!-- FOOTER -->
     <footer class="border-t border-purple-900/30 py-10">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg"></div>
           <span class="gradient-text font-bold">CATALYST</span>
         </div>
-        <p class="text-purple-400/50 text-sm">2026 Catalyst Hub. Not affiliated with Roblox Corporation.</p>
+        <p class="text-purple-400/50 text-sm">2026 Catalyst Hub. Not affiliated with Roblox.</p>
         <div class="flex gap-6 text-purple-400/50 text-sm">
           <a href="#" class="hover:text-purple-300 transition">Terms</a>
           <a href="#" class="hover:text-purple-300 transition">Privacy</a>
@@ -394,266 +215,117 @@
         </div>
       </div>
     </footer>
-
   </div>
 
   <script>
     // ============== ФОН С ТОЧКАМИ ==============
     function createDotBackground() {
-      const container = document.getElementById('dotBg');
-      if (!container) return;
-
-      container.innerHTML = '';
-
-      const count = 100;
-      const fragment = document.createDocumentFragment();
-
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement('div');
-        dot.classList.add('dot');
-
-        const size = Math.random() * 8 + 3;
-        const left = Math.random() * 100;
-        const top = Math.random() * 100;
-        const duration = Math.random() * 30 + 20;
-        const delay = Math.random() * 15;
-
-        const isPulse = Math.random() > 0.6;
-        const animation = isPulse
-          ? `dotPulse ${Math.random() * 4 + 3}s ease-in-out infinite`
-          : `dotDrift ${duration}s linear infinite`;
-
-        dot.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          left: ${left}%;
-          top: ${top}%;
-          animation: ${animation};
-          animation-delay: ${delay}s;
-          opacity: ${Math.random() * 0.4 + 0.3};
-        `;
-
-        dot.dataset.baseOpacity = dot.style.opacity;
-
-        fragment.appendChild(dot);
+      const c = document.getElementById('dotBg');
+      if (!c) return;
+      c.innerHTML = '';
+      const f = document.createDocumentFragment();
+      for (let i = 0; i < 100; i++) {
+        const d = document.createElement('div'); d.classList.add('dot');
+        const s = Math.random() * 8 + 3;
+        d.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:${Math.random()>0.6?`dotPulse ${Math.random()*4+3}s ease-in-out infinite`:`dotDrift ${Math.random()*30+20}s linear infinite`};animation-delay:${Math.random()*15}s;opacity:${Math.random()*0.4+0.3}`;
+        d.dataset.baseOpacity = d.style.opacity; f.appendChild(d);
       }
-
-      container.appendChild(fragment);
+      c.appendChild(f);
     }
 
     function setupDotsFade() {
       const dots = document.querySelectorAll('.dot');
-      if (dots.length === 0) return;
-
       window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        const maxScroll = document.body.scrollHeight - window.innerHeight;
-        const scrollPercent = Math.min(scrollY / (maxScroll || 1), 1);
-
-        dots.forEach(dot => {
-          const baseOpacity = parseFloat(dot.dataset.baseOpacity) || 0.4;
-          const newOpacity = baseOpacity * (1 - scrollPercent * 0.7);
-          dot.style.opacity = Math.max(newOpacity, 0.03);
-        });
+        const p = Math.min(window.scrollY / (document.body.scrollHeight - window.innerHeight || 1), 1);
+        dots.forEach(d => { d.style.opacity = Math.max(parseFloat(d.dataset.baseOpacity || 0.4) * (1 - p * 0.7), 0.03); });
       }, { passive: true });
     }
 
     // ============== АНИМАЦИИ ==============
     function setupAnimations() {
-      const navbar = document.getElementById('navbar');
-      if (navbar) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            navbar.classList.add('visible');
-          });
-        });
-      }
-
-      const heroElements = [
-        { id: 'heroTitle', delay: 300 },
-        { id: 'heroDesc', delay: 600 },
-        { id: 'heroBtns', delay: 900 },
-        { id: 'scrollIndicator', delay: 1300 },
-      ];
-
-      heroElements.forEach(({ id, delay }) => {
-        const el = document.getElementById(id);
-        if (el) {
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              el.classList.add('visible');
-            });
-          }, delay);
-        }
+      const n = document.getElementById('navbar');
+      if (n) requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add('visible')));
+      [{id:'heroTitle',d:300},{id:'heroDesc',d:600},{id:'heroBtns',d:900},{id:'scrollIndicator',d:1300}].forEach(({id,d}) => {
+        const e = document.getElementById(id); if (e) setTimeout(() => requestAnimationFrame(() => e.classList.add('visible')), d);
       });
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            requestAnimationFrame(() => {
-              entry.target.classList.add('visible');
-            });
-          }
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
-
-      document.querySelectorAll('.section-reveal').forEach(section => {
-        observer.observe(section);
-      });
+      const o = new IntersectionObserver(e => { e.forEach(e => { if (e.isIntersecting) requestAnimationFrame(() => e.target.classList.add('visible')); }); }, { threshold: 0.1 });
+      document.querySelectorAll('.section-reveal').forEach(s => o.observe(s));
     }
 
-    // ============== МОБИЛЬНОЕ МЕНЮ ==============
     function setupMobileMenu() {
-      const btn = document.getElementById('mobileMenuBtn');
-      const menu = document.getElementById('mobileMenu');
-      if (!btn || !menu) return;
-      btn.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-      });
-      menu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => menu.classList.add('hidden'));
-      });
+      const b = document.getElementById('mobileMenuBtn'), m = document.getElementById('mobileMenu');
+      if (b && m) { b.addEventListener('click', () => m.classList.toggle('hidden')); m.querySelectorAll('a').forEach(l => l.addEventListener('click', () => m.classList.add('hidden'))); }
     }
 
-    // ============== ЗАГРУЗКА СТАТУСОВ ==============
-    async function loadStatuses() {
+    function setupSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', function(e) {
+        e.preventDefault(); const t = document.querySelector(this.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' });
+      }));
+    }
+
+    // ============== СТАТИСТИКА ==============
+    async function loadStats() {
       try {
-        const res = await fetch('/api/admin?action=status');
+        const res = await fetch('/api/stats');
         const data = await res.json();
-        return data.games || [];
-      } catch (e) {
-        console.error('Failed to load statuses:', e);
-        return [];
-      }
+        document.getElementById('statTotalLoads').textContent = (data.totalLoads || 0).toLocaleString();
+        document.getElementById('statActiveUsers').textContent = (data.activeUsers || 0).toLocaleString();
+        document.getElementById('statGames').textContent = (data.games?.length || 0).toLocaleString();
+        const premiumCount = (data.loadsByRank?.Premium || 0) + (data.loadsByRank?.Ultimate || 0);
+        document.getElementById('statPremium').textContent = premiumCount.toLocaleString();
+      } catch (e) { console.error('Stats error:', e); }
+    }
+
+    // ============== СКРИПТЫ ==============
+    async function loadStatuses() {
+      try { const r = await fetch('/api/admin?action=status'); const d = await r.json(); return d.games || []; } catch (e) { return []; }
     }
 
     function renderScriptCards(statuses) {
-      const container = document.getElementById('scriptsContainer');
-      if (!container) return;
-
-      // Игры синхронизированы с api/admin.js: mm2, bloxfruits, adoptme
-      const games = [
-        { id: 'mm2', name: 'Murder Mystery 2', desc: 'Auto farm, ESP, God mode, instant kill.' },
-        { id: 'bloxfruits', name: 'Blox Fruits', desc: 'Auto farm, teleports, devil fruit sniper, raid helper.' },
-        { id: 'adoptme', name: 'Adopt Me', desc: 'Auto money farm, pet dupe, trade helper.' },
-      ];
-
-      container.innerHTML = games.map(game => {
-        const statusObj = statuses.find(s => s.game === game.id);
-        const status = statusObj ? statusObj.status : 'Unknown';
-        const statusStyles = {
-          'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30',
-          'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
-          'Patched': 'bg-red-600/20 text-red-400 border-red-500/30',
-        };
-        const statusClass = statusStyles[status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
-
-        return `
-          <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
-            <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
-              <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold mb-2">${game.name}</h3>
-            <p class="text-purple-200/50 text-sm mb-4">${game.desc}</p>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${statusClass}">
-              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-              ${status.toUpperCase()}
-            </span>
+      const c = document.getElementById('scriptsContainer');
+      if (!c || !statuses.length) { c.innerHTML = '<p class="text-center col-span-full text-purple-400/50 py-8">Loading scripts...</p>'; return; }
+      const st = { 'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30', 'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30', 'Patched': 'bg-red-600/20 text-red-400 border-red-500/30' };
+      c.innerHTML = statuses.map(g => {
+        const sc = st[g.status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
+        return `<div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
+          <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
+            <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
-        `;
+          <h3 class="text-xl font-bold mb-2">${g.name}</h3>
+          <p class="text-purple-200/50 text-sm mb-4">Place ID: ${g.game}</p>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${sc}"><span class="w-1.5 h-1.5 rounded-full bg-current"></span>${g.status.toUpperCase()}</span>
+        </div>`;
       }).join('');
     }
 
-    // ============== КНОПКИ КОПИРОВАНИЯ ==============
+    // ============== КНОПКИ ==============
     function getLoaderScript() {
-      const origin = window.location.origin;
-      return `--[[ Catalyst Hub Loader ]]
-local placeId = game.PlaceId
-local gameInfo = game:GetService("MarketplaceService"):GetProductInfo(placeId)
-local gameName = gameInfo.Name:gsub("%s+", ""):lower()
-local tier = "free"
-local url = "${origin}/api/loader?game="..gameName.."&tier="..tier
-
--- Premium users: uncomment and add your key
--- url = url .. "&key=YOUR_PREMIUM_KEY"
-
-loadstring(game:HttpGet(url))()`;
+      return `loadstring(game:HttpGet("${window.location.origin}/api/loader"))()`;
     }
 
     async function copyLoader() {
-      const text = getLoaderScript();
-      try {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } catch {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        return true;
-      }
+      try { await navigator.clipboard.writeText(getLoaderScript()); return true; }
+      catch { const t = document.createElement('textarea'); t.value = getLoaderScript(); t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); return true; }
     }
 
-    function setupCopyButton(btnId) {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.addEventListener('click', async () => {
-        const originalText = btn.textContent;
-        const success = await copyLoader();
-        if (success) {
-          btn.textContent = 'Copied!';
-          btn.classList.add('!bg-green-600', '!from-green-600', '!to-green-500');
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.classList.remove('!bg-green-600', '!from-green-600', '!to-green-500');
-          }, 2000);
-        }
+    function setupCopyButton(id) {
+      const b = document.getElementById(id); if (!b) return;
+      b.addEventListener('click', async () => {
+        const o = b.textContent; if (await copyLoader()) { b.textContent = 'Copied!'; b.classList.add('!bg-green-600'); setTimeout(() => { b.textContent = o; b.classList.remove('!bg-green-600'); }, 2000); }
       });
     }
 
-    // ============== КНОПКА DISCORD — ОТКРЫВАЕТ ВКЛАДКУ ==============
     function setupDiscordButton() {
-      const btn = document.getElementById('joinDiscordBtn');
-      if (!btn) return;
-      btn.addEventListener('click', () => {
-        window.open('https://discord.gg/your-invite-code', '_blank');
-      });
+      const b = document.getElementById('joinDiscordBtn'); if (!b) return;
+      b.addEventListener('click', () => window.open('https://discord.gg/YOUR_INVITE_CODE', '_blank'));
     }
 
-    // ============== ПЛАВНЫЙ СКРОЛЛ ==============
-    function setupSmoothScroll() {
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
-      });
-    }
-
-    // ============== ИНИЦИАЛИЗАЦИЯ ==============
+    // ============== INIT ==============
     window.addEventListener('load', async () => {
-      createDotBackground();
-      setupDotsFade();
-      setupAnimations();
-      setupMobileMenu();
-      setupSmoothScroll();
-
-      const statuses = await loadStatuses();
-      renderScriptCards(statuses);
-
-      setupCopyButton('copyLoaderBtn');
-      setupCopyButton('heroCopyBtn');
-      setupDiscordButton();
+      createDotBackground(); setupDotsFade(); setupAnimations(); setupMobileMenu(); setupSmoothScroll();
+      loadStats(); setInterval(loadStats, 30000);
+      const statuses = await loadStatuses(); renderScriptCards(statuses);
+      setupCopyButton('copyLoaderBtn'); setupCopyButton('heroCopyBtn'); setupDiscordButton();
     });
   </script>
 </body>
