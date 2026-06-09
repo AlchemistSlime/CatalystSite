@@ -10,13 +10,7 @@
       theme: {
         extend: {
           colors: {
-            cyber: {
-              purple: '#a855f7',
-              dark: '#0f0b1e',
-              darker: '#07040f',
-              neon: '#d946ef',
-              pink: '#ec4899',
-            },
+            cyber: { purple: '#a855f7', dark: '#0f0b1e', darker: '#07040f', neon: '#d946ef', pink: '#ec4899' },
           },
         },
       },
@@ -24,84 +18,118 @@
   </script>
   <style>
     body { background: #07040f; }
-    .gradient-text {
-      background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    .gradient-text { background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #07040f; } ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 3px; }
+    .tab-btn.active { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body class="text-white font-sans min-h-screen p-6">
-  <div class="max-w-5xl mx-auto">
+  <div class="max-w-6xl mx-auto">
 
-    <!-- Заголовок -->
-    <div class="flex items-center justify-between mb-10">
-      <h1 class="text-3xl font-bold gradient-text">Catalyst Admin Panel</h1>
-      <div class="flex gap-4">
-        <input id="passwordInput" type="password" placeholder="Admin password" class="bg-cyber-dark border border-purple-900/50 rounded-lg px-4 py-2 text-white placeholder-purple-400/50 focus:outline-none focus:border-purple-500" />
-        <button id="authBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Authenticate</button>
+    <!-- Заголовок + авторизация -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold gradient-text">Catalyst Admin Panel</h1>
+        <p class="text-purple-400/50 text-sm mt-1">Games · Scripts · Statuses · Logs</p>
+      </div>
+      <div class="flex gap-3">
+        <input id="passwordInput" type="password" placeholder="Password" class="bg-cyber-dark border border-purple-900/50 rounded-lg px-4 py-2 text-white placeholder-purple-400/50 focus:outline-none focus:border-purple-500 w-44" />
+        <button id="authBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Log In</button>
       </div>
     </div>
 
-    <!-- Статус авторизации -->
     <div id="authStatus" class="mb-6 text-sm"></div>
 
-    <!-- Панель управления статусами игр -->
-    <div id="statusPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-bold mb-4">Game Status Management</h2>
-      <div id="gamesList" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
-    </div>
+    <!-- Контент (скрыт до авторизации) -->
+    <div id="mainContent" class="hidden">
 
-    <!-- Панель обновления скриптов -->
-    <div id="scriptPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-bold mb-4">Script Editor</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <select id="scriptGame" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
-          <option value="mm2">Murder Mystery 2</option>
-          <option value="bloxfruits">Blox Fruits</option>
-        </select>
-        <select id="scriptTier" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
-          <option value="free">Free</option>
-          <option value="premium">Premium</option>
-        </select>
+      <!-- Табы -->
+      <div class="flex gap-2 mb-8 flex-wrap border-b border-purple-900/30 pb-4">
+        <button class="tab-btn active px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-games">Games</button>
+        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-scripts">Scripts</button>
+        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-loader">Universal Loader</button>
+        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-logs">Logs</button>
+        <button class="tab-btn px-5 py-2 rounded-lg text-sm font-medium border border-transparent transition" data-tab="tab-adminlogs">Admin Logs</button>
       </div>
-      <textarea id="scriptCode" rows="8" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4"></textarea>
-      <div class="flex gap-4">
-        <button id="updateScriptBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">Update Script</button>
-        <button id="rollbackBtn" class="border-2 border-yellow-600 text-yellow-400 hover:bg-yellow-600/20 px-6 py-2 rounded-lg font-semibold transition">Rollback</button>
-      </div>
-    </div>
 
-    <!-- Логи -->
-    <div id="logsPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-      <h2 class="text-xl font-bold mb-4">Launch Logs</h2>
-      <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh Logs</button>
-      <div id="logsContainer" class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-purple-900/30 text-purple-300">
-              <th class="py-3 px-4">Timestamp</th>
-              <th class="py-3 px-4">IP</th>
-              <th class="py-3 px-4">Game</th>
-              <th class="py-3 px-4">Tier</th>
-            </tr>
-          </thead>
-          <tbody id="logsBody" class="text-purple-200/70"></tbody>
-        </table>
-      </div>
-    </div>
+      <!-- Таб: Games -->
+      <div id="tab-games" class="tab-content active">
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-6">
+          <h2 class="text-xl font-bold mb-4">Add New Game</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <input id="newGameId" placeholder="Game ID (e.g., mm2)" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
+            <input id="newGameName" placeholder="Game Name" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
+            <input id="newGameDesc" placeholder="Description" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <button id="addGameBtn" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Add Game</button>
+        </div>
 
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+          <h2 class="text-xl font-bold mb-4">Manage Games</h2>
+          <div id="gamesManageList" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <!-- Таб: Scripts -->
+      <div id="tab-scripts" class="tab-content">
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+          <h2 class="text-xl font-bold mb-4">Script Editor</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <select id="scriptGame" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm"></select>
+            <select id="scriptTier" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm">
+              <option value="free">Free</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <textarea id="scriptCode" rows="12" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4 resize-y"></textarea>
+          <div class="flex gap-4 flex-wrap">
+            <button id="loadScriptBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-5 py-2 rounded-lg text-sm transition">Load</button>
+            <button id="updateScriptBtn" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Update</button>
+            <button id="rollbackBtn" class="border-2 border-yellow-600 text-yellow-400 hover:bg-yellow-600/20 px-5 py-2 rounded-lg text-sm font-semibold transition">Rollback</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Таб: Universal Loader -->
+      <div id="tab-loader" class="tab-content">
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+          <h2 class="text-xl font-bold mb-4">Universal Loader Script</h2>
+          <p class="text-purple-300/60 text-sm mb-4">This is the script users copy and execute. Use <code>https://YOUR_DOMAIN/api/loader?action=loader</code> to get it.</p>
+          <textarea id="loaderCode" rows="12" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4 resize-y"></textarea>
+          <div class="flex gap-4">
+            <button id="loadLoaderBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-5 py-2 rounded-lg text-sm transition">Load Current</button>
+            <button id="updateLoaderBtn" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Update Loader</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Таб: Launch Logs -->
+      <div id="tab-logs" class="tab-content">
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+          <h2 class="text-xl font-bold mb-4">Launch Logs</h2>
+          <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
+          <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-purple-900/30 text-purple-300"><th class="py-3 px-4">Time</th><th class="py-3 px-4">IP</th><th class="py-3 px-4">Game</th><th class="py-3 px-4">Tier</th></tr></thead><tbody id="logsBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Таб: Admin Logs -->
+      <div id="tab-adminlogs" class="tab-content">
+        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
+          <h2 class="text-xl font-bold mb-4">Admin Action Logs</h2>
+          <button id="refreshAdminLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
+          <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-purple-900/30 text-purple-300"><th class="py-3 px-4">Time</th><th class="py-3 px-4">IP</th><th class="py-3 px-4">Action</th><th class="py-3 px-4">Details</th></tr></thead><tbody id="adminLogsBody"></tbody></table></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
     let authPassword = '';
-
-    // Сохранение пароля в sessionStorage
     const savedPass = sessionStorage.getItem('admin_pass');
-    if (savedPass) {
-      document.getElementById('passwordInput').value = savedPass;
-      authenticate(savedPass);
-    }
+    if (savedPass) { document.getElementById('passwordInput').value = savedPass; authenticate(savedPass); }
 
     document.getElementById('authBtn').addEventListener('click', () => {
       const pass = document.getElementById('passwordInput').value;
@@ -110,33 +138,27 @@
       authenticate(pass);
     });
 
+    document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authBtn').click(); });
+
     async function authenticate(pass) {
       authPassword = pass;
-      // Проверяем авторизацию через запрос логов
       const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(pass)}`);
       if (res.status === 401) {
         document.getElementById('authStatus').innerHTML = '<span class="text-red-400">Invalid password</span>';
-        hidePanels();
+        document.getElementById('mainContent').classList.add('hidden');
         return;
       }
       document.getElementById('authStatus').innerHTML = '<span class="text-green-400">Authenticated</span>';
-      showPanels();
+      document.getElementById('mainContent').classList.remove('hidden');
       loadAllData();
     }
 
-    function hidePanels() {
-      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
+    async function apiGet(action, params = '') {
+      const res = await fetch(`/api/admin?action=${action}&password=${encodeURIComponent(authPassword)}${params}`);
+      return res.json();
     }
 
-    function showPanels() {
-      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
-        document.getElementById(id).classList.remove('hidden');
-      });
-    }
-
-    async function apiCall(body) {
+    async function apiPost(body) {
       const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -146,85 +168,151 @@
     }
 
     async function loadAllData() {
-      // Загружаем статусы
-      const statusRes = await fetch('/api/admin?action=status');
-      const statusData = await statusRes.json();
-      renderGamesList(statusData.games || []);
+      const [statusData, gamesData, loaderData, logsData] = await Promise.all([
+        fetch('/api/admin?action=status').then(r => r.json()),
+        apiGet('getGames'),
+        apiGet('getLoader'),
+        apiGet('logs'),
+      ]);
 
-      // Загружаем логи
-      loadLogs();
+      renderGamesList(statusData.games || []);
+      populateScriptGameSelect(Object.keys(gamesData.games || {}));
+      document.getElementById('loaderCode').value = loaderData.loader || '';
+      renderLogs(logsData.launchLogs || [], 'logsBody', ['timestamp', 'ip', 'game', 'tier']);
+      renderLogs(logsData.adminLogs || [], 'adminLogsBody', ['timestamp', 'ip', 'action', 'details']);
     }
 
     function renderGamesList(games) {
-      const container = document.getElementById('gamesList');
+      const container = document.getElementById('gamesManageList');
       container.innerHTML = games.map(g => `
-        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-4 flex flex-col items-center">
-          <span class="font-bold text-lg">${g.game}</span>
-          <select class="statusSelect mt-2 bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm text-white" data-game="${g.game}">
-            <option value="Undetected" ${g.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
-            <option value="On Update" ${g.status === 'On Update' ? 'selected' : ''}>On Update</option>
-            <option value="Patched" ${g.status === 'Patched' ? 'selected' : ''}>Patched</option>
-          </select>
+        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-5 flex flex-col md:flex-row md:items-center gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="font-bold text-lg">${g.name}</span>
+              <span class="text-purple-400/50 text-sm">(${g.game})</span>
+            </div>
+            <input type="text" class="game-name-input w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm mb-2" value="${g.name}" data-game="${g.game}" data-field="name" />
+            <input type="text" class="game-desc-input w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm mb-2" value="${g.description || ''}" data-game="${g.game}" data-field="description" />
+            <select class="game-status-select bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm" data-game="${g.game}">
+              <option value="Undetected" ${g.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
+              <option value="On Update" ${g.status === 'On Update' ? 'selected' : ''}>On Update</option>
+              <option value="Patched" ${g.status === 'Patched' ? 'selected' : ''}>Patched</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button class="save-game-btn bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${g.game}">Save</button>
+            <button class="delete-game-btn bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/40 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${g.game}">Delete</button>
+          </div>
         </div>
       `).join('');
 
-      // Обработчики изменения статуса
-      document.querySelectorAll('.statusSelect').forEach(select => {
-        select.addEventListener('change', async (e) => {
-          const game = e.target.dataset.game;
-          const status = e.target.value;
-          const result = await apiCall({ action: 'updateStatus', game, status });
-          if (result.success) {
-            alert(`Status for ${game} updated to ${status}`);
-          }
+      // Обработчики
+      document.querySelectorAll('.save-game-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const game = btn.dataset.game;
+          const name = document.querySelector(`.game-name-input[data-game="${game}"]`).value;
+          const desc = document.querySelector(`.game-desc-input[data-game="${game}"]`).value;
+          const status = document.querySelector(`.game-status-select[data-game="${game}"]`).value;
+          await apiPost({ action: 'updateGameInfo', game, name, description: desc });
+          await apiPost({ action: 'updateStatus', game, status });
+          btn.textContent = 'Saved!'; btn.classList.add('!bg-green-600');
+          setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('!bg-green-600'); }, 1500);
+        });
+      });
+
+      document.querySelectorAll('.delete-game-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const game = btn.dataset.game;
+          if (!confirm(`Delete ${game}?`)) return;
+          await apiPost({ action: 'deleteGame', game });
+          loadAllData();
         });
       });
     }
 
-    async function loadLogs() {
-      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(authPassword)}`);
-      const data = await res.json();
-      const tbody = document.getElementById('logsBody');
-      if (!data.logs || data.logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-4 px-4 text-purple-400/50">No logs yet</td></tr>';
+    function populateScriptGameSelect(gameIds) {
+      const select = document.getElementById('scriptGame');
+      select.innerHTML = gameIds.map(id => `<option value="${id}">${id}</option>`).join('');
+    }
+
+    function renderLogs(logs, tbodyId, fields) {
+      const tbody = document.getElementById(tbodyId);
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${fields.length}" class="py-8 px-4 text-purple-400/50 text-center">No records</td></tr>`;
         return;
       }
-      tbody.innerHTML = data.logs.slice().reverse().map(log => `
-        <tr class="border-b border-purple-900/20">
-          <td class="py-3 px-4">${new Date(log.timestamp).toLocaleString()}</td>
-          <td class="py-3 px-4">${log.ip}</td>
-          <td class="py-3 px-4">${log.game}</td>
-          <td class="py-3 px-4 capitalize">${log.tier}</td>
+      tbody.innerHTML = logs.slice().reverse().map(log => `
+        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10 transition">
+          ${fields.map(f => `<td class="py-3 px-4 text-sm">${f === 'timestamp' ? new Date(log[f]).toLocaleString() : (log[f] || '')}</td>`).join('')}
         </tr>
       `).join('');
     }
 
-    document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
+    // Табы
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Add game
+    document.getElementById('addGameBtn').addEventListener('click', async () => {
+      const id = document.getElementById('newGameId').value.trim();
+      const name = document.getElementById('newGameName').value.trim();
+      const desc = document.getElementById('newGameDesc').value.trim();
+      if (!id || !name) return alert('ID and Name required');
+      await apiPost({ action: 'addGame', game: id, name, description: desc });
+      document.getElementById('newGameId').value = '';
+      document.getElementById('newGameName').value = '';
+      document.getElementById('newGameDesc').value = '';
+      loadAllData();
+    });
+
+    // Scripts
+    document.getElementById('loadScriptBtn').addEventListener('click', async () => {
+      const game = document.getElementById('scriptGame').value;
+      const tier = document.getElementById('scriptTier').value;
+      const data = await apiGet('getScript', `&game=${game}&tier=${tier}`);
+      if (data.code) document.getElementById('scriptCode').value = data.code;
+      else alert('Not found');
+    });
 
     document.getElementById('updateScriptBtn').addEventListener('click', async () => {
       const game = document.getElementById('scriptGame').value;
       const tier = document.getElementById('scriptTier').value;
       const code = document.getElementById('scriptCode').value;
-      if (!code.trim()) return alert('Enter script code');
-      const result = await apiCall({ action: 'updateScript', game, tier, code });
-      if (result.success) {
-        alert('Script updated successfully!');
-      } else {
-        alert('Error: ' + (result.error || 'Unknown'));
-      }
+      if (!code.trim()) return alert('Enter code');
+      await apiPost({ action: 'updateScript', game, tier, code });
+      const btn = document.getElementById('updateScriptBtn');
+      btn.textContent = 'Updated!'; btn.classList.add('!bg-green-600');
+      setTimeout(() => { btn.textContent = 'Update'; btn.classList.remove('!bg-green-600'); }, 1500);
     });
 
     document.getElementById('rollbackBtn').addEventListener('click', async () => {
       const game = document.getElementById('scriptGame').value;
       const tier = document.getElementById('scriptTier').value;
-      const result = await apiCall({ action: 'rollback', game, tier });
-      if (result.success) {
-        document.getElementById('scriptCode').value = result.code;
-        alert('Rolled back to previous version!');
-      } else {
-        alert('Error: ' + (result.error || 'Unknown'));
-      }
+      if (!confirm(`Rollback ${game} ${tier}?`)) return;
+      const result = await apiPost({ action: 'rollback', game, tier });
+      if (result.code) document.getElementById('scriptCode').value = result.code;
     });
-  </script>
-</body>
-</html>
+
+    // Loader
+    document.getElementById('loadLoaderBtn').addEventListener('click', async () => {
+      const data = await apiGet('getLoader');
+      document.getElementById('loaderCode').value = data.loader || '';
+    });
+
+    document.getElementById('updateLoaderBtn').addEventListener('click', async () => {
+      const loader = document.getElementById('loaderCode').value;
+      await apiPost({ action: 'updateLoader', loader });
+      const btn = document.getElementById('updateLoaderBtn');
+      btn.textContent = 'Updated!'; btn.classList.add('!bg-green-600');
+      setTimeout(() => { btn.textContent = 'Update Loader'; btn.classList.remove('!bg-green-600'); }, 1500);
+    });
+
+    // Logs
+    document.getElementById('refreshLogsBtn').addEventListener('click', async () => {
+      const data = await apiGet('
