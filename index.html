@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catalyst - Roblox Script Hub</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Кастомизация Tailwind под фиолетово-киберпанк стиль
     tailwind.config = {
       theme: {
         extend: {
@@ -18,171 +16,453 @@
               darker: '#07040f',
               neon: '#d946ef',
               pink: '#ec4899',
+              accent: '#7c3aed',
             },
           },
           fontFamily: {
             mono: ['"JetBrains Mono"', 'monospace'],
             sans: ['Inter', 'sans-serif'],
           },
+          animation: {
+            'fade-in': 'fadeIn 0.8s ease-out forwards',
+            'fade-in-delay': 'fadeIn 0.8s ease-out 0.3s forwards',
+            'fade-in-delay-2': 'fadeIn 0.8s ease-out 0.6s forwards',
+            'slide-up': 'slideUp 0.8s ease-out forwards',
+            'slide-down': 'slideDown 0.5s ease-out forwards',
+            'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+            'gradient-shift': 'gradientShift 4s ease-in-out infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'dot-drift': 'dotDrift 20s linear infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(40px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            slideDown: {
+              '0%': { opacity: '0', transform: 'translateY(-20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(168, 85, 247, 0.4)' },
+              '50%': { boxShadow: '0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4)' },
+            },
+            gradientShift: {
+              '0%, 100%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            dotDrift: {
+              '0%': { transform: 'translateY(0) translateX(0)' },
+              '100%': { transform: 'translateY(-100vh) translateX(50px)' },
+            },
+          },
         },
       },
     };
   </script>
   <style>
-    /* Дополнительные стили */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
     .gradient-text {
+      background: linear-gradient(135deg, #d946ef, #a855f7, #7c3aed, #ec4899);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease-in-out infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-static {
       background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .glow {
+
+    .btn-glow {
       box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-glow:hover {
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-8px);
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Фон с точками */
+    .dot-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .dot {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(168, 85, 247, 0.15);
+      animation: dotDrift linear infinite;
+    }
+
+    .section-visible {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .section-visible.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #07040f;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border-radius: 3px;
     }
   </style>
 </head>
-<body class="bg-cyber-darker text-white font-sans min-h-screen">
+<body class="bg-cyber-darker text-white font-sans min-h-screen relative">
 
-  <!-- Навигация -->
-  <nav class="fixed top-0 left-0 right-0 bg-cyber-dark/80 backdrop-blur-md z-50 border-b border-purple-900/50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-3xl">⚡</span>
-        <span class="text-2xl font-bold gradient-text">CATALYST</span>
-      </div>
-      <div class="hidden md:flex gap-8 text-sm font-medium text-purple-200">
-        <a href="#scripts" class="hover:text-neon transition">Scripts</a>
-        <a href="#kernel" class="hover:text-neon transition">Kernel</a>
-        <a href="#pricing" class="hover:text-neon transition">Premium</a>
-      </div>
-      <button id="copyLoaderBtn" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full text-sm font-semibold transition shadow-glow">
-        Copy Loader
-      </button>
-    </div>
-  </nav>
+  <!-- Анимированный фон с точками -->
+  <div class="dot-bg" id="dotBg"></div>
 
-  <!-- Hero Section -->
-  <section class="flex flex-col items-center justify-center min-h-screen text-center px-4 pt-20">
-    <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
-      <span class="gradient-text">CATALYST:</span><br />
-      <span class="text-white">UP YOUR GAMEPLAY.</span>
-    </h1>
-    <p class="text-purple-200/80 max-w-xl mb-10 text-lg">
-      Dominate every server with undetected, lightning-fast scripts. Free for all, premium for legends.
-    </p>
-    <div class="flex flex-wrap gap-4 justify-center">
-      <button id="heroCopyBtn" class="bg-purple-600 hover:bg-purple-700 px-8 py-4 rounded-full text-lg font-bold transition transform hover:scale-105 glow">
-        Copy Loader
-      </button>
-      <button id="joinDiscordBtn" class="border-2 border-purple-500 text-purple-300 hover:bg-purple-500/20 px-8 py-4 rounded-full text-lg font-bold transition transform hover:scale-105">
-        Join Our Community!
-      </button>
-    </div>
-    <!-- Анимированная стрелка вниз -->
-    <div class="mt-20 animate-bounce">
-      <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-  </section>
+  <!-- Основной контент (поверх точек) -->
+  <div class="relative z-10">
 
-  <!-- Секция "Our Scripts" -->
-  <section id="scripts" class="max-w-7xl mx-auto px-4 py-20">
-    <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Our Scripts</h2>
-    <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Карточки будут созданы динамически -->
-    </div>
-  </section>
+    <!-- Навигация -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 opacity-0 translate-y-[-20px]">
+      <div class="bg-cyber-dark/80 backdrop-blur-xl border-b border-purple-900/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <!-- Логотип -->
+          <a href="#" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="text-2xl font-bold gradient-text">CATALYST</span>
+          </a>
 
-  <!-- Секция Catalyst Kernel -->
-  <section id="kernel" class="bg-cyber-dark/50 py-20">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-      <div class="inline-block px-6 py-2 bg-purple-900/30 rounded-full text-purple-300 text-sm mb-6">
-        IN DEVELOPMENT
-      </div>
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Catalyst <span class="gradient-text">Kernel</span>
-      </h2>
-      <p class="text-purple-200/70 text-lg mb-8 max-w-2xl mx-auto">
-        Our own level 8 executor with unparalleled stability and Lua 5.1/5.2 support.<br />
-        Soon to be released – join the waitlist to be the first to harness its power.
-      </p>
-      <div class="inline-block bg-gradient-to-r from-purple-800 to-pink-800 p-[2px] rounded-xl glow">
-        <button class="bg-cyber-darker px-8 py-4 rounded-xl font-bold text-lg hover:bg-transparent transition">
-          Join Waitlist
-        </button>
-      </div>
-    </div>
-  </section>
+          <!-- Ссылки навигации -->
+          <div class="hidden md:flex items-center gap-1">
+            <a href="#scripts" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Scripts</a>
+            <a href="#kernel" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Kernel</a>
+            <a href="#pricing" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Premium</a>
+            <a href="#about" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">About</a>
+          </div>
 
-  <!-- Секция Pricing / Premium сравнение -->
-  <section id="pricing" class="max-w-7xl mx-auto px-4 py-20">
-    <h2 class="text-4xl font-bold text-center mb-4 gradient-text">Choose Your Power</h2>
-    <p class="text-center text-purple-200/70 mb-12 max-w-xl mx-auto">
-      Want to be a leader of server? Buy Premium and unlock exclusive scripts, priority support, and more.
-    </p>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Standard -->
-      <div class="bg-cyber-dark border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center text-center">
-        <h3 class="text-2xl font-bold mb-2">Standard</h3>
-        <p class="text-purple-300 text-sm mb-6">Free forever</p>
-        <ul class="text-left text-purple-200/80 space-y-2 mb-8">
-          <li>✓ Access to all free scripts</li>
-          <li>✓ Basic features</li>
-          <li>✓ Community support</li>
-          <li>✗ No premium scripts</li>
-          <li>✗ Priority updates</li>
-        </ul>
-        <button class="mt-auto border-2 border-purple-500 text-purple-300 px-6 py-3 rounded-full font-semibold cursor-default">
-          Current
-        </button>
-      </div>
-      <!-- Premium -->
-      <div class="bg-gradient-to-b from-purple-900/40 to-cyber-dark border-2 border-purple-500 rounded-2xl p-8 flex flex-col items-center text-center transform scale-105">
-        <div class="bg-purple-600 text-white text-xs px-3 py-1 rounded-full mb-4">MOST POPULAR</div>
-        <h3 class="text-2xl font-bold mb-2">Premium</h3>
-        <p class="text-purple-300 text-sm mb-6">$9.99 / month</p>
-        <ul class="text-left text-purple-200/80 space-y-2 mb-8">
-          <li>✓ All Standard features</li>
-          <li>✓ All premium scripts unlocked</li>
-          <li>✓ Aimbot, ESP, Auto Farm</li>
-          <li>✓ Priority updates & support</li>
-          <li>✓ Kernel early access (soon)</li>
-        </ul>
-        <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full font-bold text-white transition glow">
-          Buy Premium
-        </a>
-      </div>
-      <!-- Ultimate -->
-      <div class="bg-cyber-dark border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center text-center">
-        <h3 class="text-2xl font-bold mb-2">Ultimate</h3>
-        <p class="text-purple-300 text-sm mb-6">$19.99 / month</p>
-        <ul class="text-left text-purple-200/80 space-y-2 mb-8">
-          <li>✓ All Premium features</li>
-          <li>✓ Exclusive Ultimate scripts</li>
-          <li>✓ Custom script requests</li>
-          <li>✓ Direct developer chat</li>
-          <li>✓ Kernel guaranteed access</li>
-        </ul>
-        <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto border-2 border-purple-500 text-purple-300 hover:bg-purple-500/20 px-6 py-3 rounded-full font-bold transition">
-          Buy Ultimate
-        </a>
-      </div>
-    </div>
-  </section>
+          <!-- Кнопка копирования -->
+          <button id="copyLoaderBtn" class="btn-glow bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300">
+            Copy Loader
+          </button>
 
-  <!-- Футер -->
-  <footer class="border-t border-purple-900/30 py-8 text-center text-purple-400 text-sm">
-    © 2026 Catalyst Hub. All rights reserved. Not affiliated with Roblox.
-  </footer>
+          <!-- Мобильное меню -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 text-purple-300 hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
-  <!-- Скрипты -->
+      <!-- Мобильное меню (скрыто по умолчанию) -->
+      <div id="mobileMenu" class="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-purple-900/30 hidden">
+        <div class="px-6 py-4 space-y-2">
+          <a href="#scripts" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Scripts</a>
+          <a href="#kernel" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Kernel</a>
+          <a href="#pricing" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Premium</a>
+          <a href="#about" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">About</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-20">
+      <div class="max-w-4xl">
+        <div class="opacity-0 translate-y-8" id="heroTitle">
+          <h1 class="text-6xl md:text-8xl font-black leading-tight mb-6 tracking-tight">
+            <span class="gradient-text">CATALYST:</span><br />
+            <span class="text-white">UP YOUR GAMEPLAY.</span>
+          </h1>
+        </div>
+        <div class="opacity-0 translate-y-8" id="heroDesc">
+          <p class="text-purple-200/70 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
+            Dominate every Roblox server with lightning-fast, undetected scripts.
+            <br class="hidden md:block" />
+            <span class="text-purple-400 font-semibold">Free for all. Premium for legends.</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-5 justify-center opacity-0 translate-y-8" id="heroBtns">
+          <button id="heroCopyBtn" class="btn-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300">
+            Copy Loader
+          </button>
+          <button id="joinDiscordBtn" class="border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 backdrop-blur-sm">
+            Join Our Community
+          </button>
+        </div>
+
+        <!-- Скролл-индикатор -->
+        <div class="mt-20 opacity-0" id="scrollIndicator">
+          <div class="animate-bounce">
+            <svg class="w-8 h-8 mx-auto text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <p class="text-purple-400/60 text-sm mt-3">Scroll to explore</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Секция "Our Scripts" -->
+    <section id="scripts" class="section-visible max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Our Scripts</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
+          Undetected, regularly updated, ready to execute. Choose your game and dominate.
+        </p>
+      </div>
+      <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Карточки генерируются динамически -->
+      </div>
+    </section>
+
+    <!-- Секция Catalyst Kernel -->
+    <section id="kernel" class="section-visible py-24 relative">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent"></div>
+      <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-block px-6 py-2 bg-purple-600/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium mb-8 backdrop-blur-sm">
+          IN DEVELOPMENT
+        </div>
+        <h2 class="text-6xl font-black mb-6">
+          Catalyst <span class="gradient-text">Kernel</span>
+        </h2>
+        <p class="text-purple-200/60 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+          Our proprietary Level 8 executor. Built from scratch with Lua 5.1/5.2 support,
+          unparalleled stability, and zero detection vectors.
+        </p>
+        <div class="inline-block p-[2px] rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_200%] animate-gradient-shift">
+          <button class="bg-cyber-darker hover:bg-transparent px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 text-white">
+            Join Waitlist
+          </button>
+        </div>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">100% UNC</div>
+            <p class="text-purple-200/50 text-sm">Maximum script compatibility with full Lua environment.</p>
+          </div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">Instant Injection</div>
+            <p class="text-purple-200/50 text-sm">Zero-delay script execution without crashing.</p>
+          </div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">Undetected</div>
+            <p class="text-purple-200/50 text-sm">Advanced anti-detection bypassing Byfron/Hyperion.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Секция Pricing -->
+    <section id="pricing" class="section-visible max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Choose Your Power</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
+          Want to be the leader of every server? Unlock Premium and access exclusive scripts, priority support, and early Kernel access.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <!-- Standard -->
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Standard</h3>
+          <p class="text-purple-300/60 text-sm mb-8">Free forever</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All free scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Basic features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Community Discord</li>
+            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No premium scripts</li>
+            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No priority support</li>
+          </ul>
+          <button class="mt-auto border-2 border-purple-500/50 text-purple-300 px-6 py-3 rounded-full font-semibold text-sm cursor-default">
+            Current Plan
+          </button>
+        </div>
+        <!-- Premium (Popular) -->
+        <div class="card-hover bg-gradient-to-b from-purple-900/40 to-cyber-dark/90 border-2 border-purple-500 rounded-2xl p-8 flex flex-col items-center text-center transform md:scale-105 relative">
+          <div class="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">
+            MOST POPULAR
+          </div>
+          <h3 class="text-2xl font-bold mb-1 mt-2">Premium</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$9.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Standard features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All premium scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Aimbot, ESP, Auto Farm</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Priority support</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel early access</li>
+          </ul>
+          <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-6 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 btn-glow text-center">
+            Buy Premium
+          </a>
+        </div>
+        <!-- Ultimate -->
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Ultimate</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$19.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Premium features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Exclusive Ultimate scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Custom script requests</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Direct developer chat</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel guaranteed access</li>
+          </ul>
+          <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto w-full border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 text-center">
+            Buy Ultimate
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Секция About -->
+    <section id="about" class="section-visible py-24 border-t border-purple-900/20">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-4xl font-black gradient-text-static mb-6">About Catalyst</h2>
+        <p class="text-purple-200/60 text-lg leading-relaxed max-w-2xl mx-auto">
+          Catalyst is a next-generation Roblox script hub built by players, for players.
+          Our mission is to provide undetected, high-performance scripts accessible to everyone.
+          With the upcoming Catalyst Kernel executor, we're pushing the boundaries of what's possible in Roblox exploiting.
+        </p>
+      </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="border-t border-purple-900/30 py-10">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg"></div>
+          <span class="gradient-text font-bold">CATALYST</span>
+        </div>
+        <p class="text-purple-400/50 text-sm">2026 Catalyst Hub. Not affiliated with Roblox Corporation.</p>
+        <div class="flex gap-6 text-purple-400/50 text-sm">
+          <a href="#" class="hover:text-purple-300 transition">Terms</a>
+          <a href="#" class="hover:text-purple-300 transition">Privacy</a>
+          <a href="#" class="hover:text-purple-300 transition">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
   <script>
-    // ============== ДИНАМИЧЕСКАЯ ЗАГРУЗКА СТАТУСОВ ==============
+    // ============== ГЕНЕРАЦИЯ ФОНА С ТОЧКАМИ ==============
+    function createDotBackground() {
+      const container = document.getElementById('dotBg');
+      if (!container) return;
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        const size = Math.random() * 4 + 1;
+        const opacity = Math.random() * 0.2 + 0.05;
+        dot.style.width = `${size}px`;
+        dot.style.height = `${size}px`;
+        dot.style.left = `${Math.random() * 100}%`;
+        dot.style.top = `${Math.random() * 100}%`;
+        dot.style.opacity = opacity;
+        dot.style.animationDuration = `${Math.random() * 25 + 15}s`;
+        dot.style.animationDelay = `${Math.random() * 10}s`;
+        container.appendChild(dot);
+      }
+    }
+
+    // ============== АНИМАЦИИ ПОЯВЛЕНИЯ ==============
+    function setupAnimations() {
+      // Навбар
+      setTimeout(() => {
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+          navbar.style.opacity = '1';
+          navbar.style.transform = 'translateY(0)';
+        }
+      }, 200);
+
+      // Hero элементы
+      setTimeout(() => {
+        document.getElementById('heroTitle')?.classList.add('!opacity-100', '!translate-y-0');
+      }, 400);
+      setTimeout(() => {
+        document.getElementById('heroDesc')?.classList.add('!opacity-100', '!translate-y-0');
+      }, 700);
+      setTimeout(() => {
+        document.getElementById('heroBtns')?.classList.add('!opacity-100', '!translate-y-0');
+      }, 1000);
+      setTimeout(() => {
+        document.getElementById('scrollIndicator')?.classList.add('!opacity-100');
+      }, 1400);
+
+      // Intersection Observer для секций
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.section-visible').forEach(section => {
+        observer.observe(section);
+      });
+    }
+
+    // ============== МОБИЛЬНОЕ МЕНЮ ==============
+    function setupMobileMenu() {
+      const btn = document.getElementById('mobileMenuBtn');
+      const menu = document.getElementById('mobileMenu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+      // Закрытие при клике на ссылку
+      menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => menu.classList.add('hidden'));
+      });
+    }
+
+    // ============== ЗАГРУЗКА СТАТУСОВ СКРИПТОВ ==============
     async function loadStatuses() {
       try {
         const res = await fetch('/api/admin?action=status');
         const data = await res.json();
-        return data.games; // массив { game, status }
+        return data.games || [];
       } catch (e) {
         console.error('Failed to load statuses:', e);
         return [];
@@ -192,60 +472,68 @@
     function renderScriptCards(statuses) {
       const container = document.getElementById('scriptsContainer');
       if (!container) return;
-      
-      // Игры, для которых будем отображать карточки (можно синхронизировать с сервером)
+
       const games = [
-        { id: 'mm2', name: 'Murder Mystery 2', icon: '🔪' },
-        { id: 'bloxfruits', name: 'Blox Fruits', icon: '🍈' },
-        // Добавляйте новые игры
+        { id: 'mm2', name: 'Murder Mystery 2', desc: 'Auto farm, ESP, God mode, instant kill.' },
+        { id: 'bloxfruits', name: 'Blox Fruits', desc: 'Auto farm, teleports, devil fruit sniper, raid helper.' },
+        { id: 'adoptme', name: 'Adopt Me', desc: 'Auto money farm, pet dupe, trade helper.' },
       ];
 
       container.innerHTML = games.map(game => {
         const statusObj = statuses.find(s => s.game === game.id);
         const status = statusObj ? statusObj.status : 'Unknown';
-        const statusColor = 
-          status === 'Undetected' ? 'bg-green-600' :
-          status === 'On Update' ? 'bg-yellow-600' :
-          status === 'Patched' ? 'bg-red-600' : 'bg-gray-600';
-        
+        const statusStyles = {
+          'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30',
+          'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
+          'Patched': 'bg-red-600/20 text-red-400 border-red-500/30',
+        };
+        const statusClass = statusStyles[status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
+
         return `
-          <div class="bg-cyber-dark border border-purple-900/40 rounded-2xl p-6 hover:border-purple-500 transition">
-            <div class="text-4xl mb-4">${game.icon}</div>
+          <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
+              <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
             <h3 class="text-xl font-bold mb-2">${game.name}</h3>
-            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusColor}">
+            <p class="text-purple-200/50 text-sm mb-4">${game.desc}</p>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${statusClass}">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
               ${status.toUpperCase()}
             </span>
-            <p class="text-purple-200/60 text-sm mt-4">Click "Copy Loader" and execute in Roblox to auto-load.</p>
           </div>
         `;
       }).join('');
     }
 
     // ============== КНОПКИ КОПИРОВАНИЯ ==============
-    // Луа-загрузчик, который автоматически определяет игру и подгружает скрипт
     function getLoaderScript() {
       const origin = window.location.origin;
       return `--[[ Catalyst Hub Loader ]]
 local placeId = game.PlaceId
 local gameInfo = game:GetService("MarketplaceService"):GetProductInfo(placeId)
 local gameName = gameInfo.Name:gsub("%s+", ""):lower()
-local tier = "free" -- Замените на "premium" и добавьте ключ, если у вас Premium
+local tier = "free"
 local url = "${origin}/api/loader?game="..gameName.."&tier="..tier
 
--- Если вы Premium, раскомментируйте строку ниже и вставьте ваш ключ
+-- Premium users: uncomment and add your key
 -- url = url .. "&key=YOUR_PREMIUM_KEY"
 
 loadstring(game:HttpGet(url))()`;
     }
 
     async function copyLoader() {
+      const text = getLoaderScript();
       try {
-        await navigator.clipboard.writeText(getLoaderScript());
+        await navigator.clipboard.writeText(text);
         return true;
       } catch {
-        // fallback для HTTP/старых браузеров
         const textarea = document.createElement('textarea');
-        textarea.value = getLoaderScript();
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
@@ -254,42 +542,59 @@ loadstring(game:HttpGet(url))()`;
       }
     }
 
-    function setupCopyButton(btnId, successText = 'Copied!', resetText = 'Copy Loader') {
+    function setupCopyButton(btnId) {
       const btn = document.getElementById(btnId);
       if (!btn) return;
       btn.addEventListener('click', async () => {
-        const originalText = btn.innerText;
+        const originalHTML = btn.innerHTML;
         const success = await copyLoader();
         if (success) {
-          btn.innerText = successText;
-          btn.classList.add('bg-green-600');
+          btn.innerHTML = '<span class="flex items-center gap-2">Copied!</span>';
+          btn.classList.add('!bg-green-600');
           setTimeout(() => {
-            btn.innerText = resetText;
-            btn.classList.remove('bg-green-600');
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('!bg-green-600');
           }, 2000);
         }
       });
     }
 
-    // Кнопка Discord: просто копирует ссылку
     function setupDiscordButton() {
       const btn = document.getElementById('joinDiscordBtn');
       if (!btn) return;
       btn.addEventListener('click', async () => {
-        const link = 'https://discord.gg/your-invite-code'; // замените на реальную ссылку
+        const link = 'https://discord.gg/your-invite-code';
         try {
           await navigator.clipboard.writeText(link);
-          const original = btn.innerText;
-          btn.innerText = 'Link Copied!';
-          setTimeout(() => { btn.innerText = original; }, 2000);
+          const original = btn.innerHTML;
+          btn.innerHTML = 'Link Copied!';
+          setTimeout(() => { btn.innerHTML = original; }, 2000);
         } catch {
           window.open(link, '_blank');
         }
       });
     }
 
+    // ============== ПЛАВНЫЙ СКРОЛЛ ДЛЯ ЯКОРНЫХ ССЫЛОК ==============
+    function setupSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    }
+
     // ============== ИНИЦИАЛИЗАЦИЯ ==============
     window.addEventListener('DOMContentLoaded', async () => {
+      createDotBackground();
+      setupAnimations();
+      setupMobileMenu();
+      setupSmoothScroll();
+
       const statuses = await loadStatuses();
       renderScriptCards(statuses);
 
