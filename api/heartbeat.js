@@ -1,6 +1,5 @@
 // api/heartbeat.js
 // Heartbeat модуль — загружается ОТДЕЛЬНО через loadstring
-// Генерирует обфусцированный Lua-код
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
@@ -20,29 +19,35 @@ setInterval(() => {
 
 function isAdmin(p) { return p === ADMIN_PASSWORD; }
 
-// ==================== ГЕНЕРАЦИЯ ОБФУСЦИРОВАННОГО LUA-МОДУЛЯ ====================
+function generateHash(userId, timestamp) {
+  let hash = '';
+  const chars = 'abcdef0123456789';
+  const seed = userId + timestamp;
+  for (let i = 0; i < 64; i++) {
+    const idx = (seed.charCodeAt(i % seed.length) + i) % chars.length;
+    hash += chars[idx];
+  }
+  return hash;
+}
+
+// ==================== ГЕНЕРАЦИЯ LUA-МОДУЛЯ ====================
 function generateHeartbeatModule(host) {
   const moduleCode = `-- ========================================================
--- CATALYST HEARTBEAT MODULE (LOADED SEPARATELY)
--- Без этого модуля скрипт НЕ ЗАПУСТИТСЯ
+-- CATALYST HEARTBEAT MODULE
 -- ========================================================
 local API_BASE = "https://${HOST}"
 local UserId = game:GetService("Players").LocalPlayer.UserId
 local PlaceId = game.PlaceId
 local GameId = game.GameId
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 
 -- ========================================================
--- 🔐 ПРОВЕРКА ВАЛИДНОСТИ МОДУЛЯ
+-- 🔐 ВАЛИДАЦИЯ МОДУЛЯ
 -- ========================================================
--- Эта проверка встроена в обфусцированный код,
--- её нельзя удалить не сломав модуль
 local ModuleValid = false
 local ValidationHash = nil
 
 local function ValidateModule()
-    -- Отправляем запрос на сервер для валидации
     local success, result = pcall(function()
         return game:HttpGet(API_BASE .. "/api/heartbeat?action=validate&userId=" .. tostring(UserId))
     end)
@@ -51,7 +56,7 @@ local function ValidateModule()
         ValidationHash = result:gsub("VALID:", ""):gsub("%s+", "")
         ModuleValid = true
         
-        -- Секретный ключ, который будут проверять скрипты игр
+        -- Устанавливаем глобальные переменные для проверки
         _G.Catalyst_HeartbeatActive = true
         _G.Catalyst_ValidationHash = ValidationHash
         
@@ -61,15 +66,13 @@ local function ValidateModule()
     return false
 end
 
--- Проверяем модуль ПЕРЕД всем остальным
+-- Проверяем модуль
 if not ValidateModule() then
-    -- Модуль невалиден — скрипт не запустится
-    -- Никаких ошибок, просто тихий выход
-    return
+    return nil
 end
 
 -- ========================================================
--- 💓 HEARTBEAT СИСТЕМА
+-- 💓 HEARTBEAT
 -- ========================================================
 local HeartbeatRunning = false
 local HeartbeatCount = 0
@@ -96,15 +99,11 @@ local function SendHeartbeat(keyType, rank, status)
     pcall(function()
         local response = game:HttpGet(url .. query)
         
-        if response == "keep alive" then
-            -- Всё хорошо
-        elseif response == "banned" then
-            -- Пользователь забанен
+        if response == "banned" then
             pcall(function()
-                game:GetService("Players").LocalPlayer:Kick("[Catalyst Hub] Access revoked. Reason: Ban")
+                game:GetService("Players").LocalPlayer:Kick("[Catalyst Hub] Access revoked.")
             end)
         elseif response == "invalid" then
-            -- Модуль не прошёл проверку
             ModuleValid = false
             HeartbeatRunning = false
         end
@@ -112,14 +111,10 @@ local function SendHeartbeat(keyType, rank, status)
 end
 
 -- Запуск heartbeat
-local function StartHeartbeat()
-    if HeartbeatRunning then return end
+if not HeartbeatRunning then
     HeartbeatRunning = true
-    
-    -- Первый heartbeat сразу
     SendHeartbeat(nil, nil, "active")
     
-    -- Каждые 45 секунд
     spawn(function()
         while HeartbeatRunning and ModuleValid do
             wait(45)
@@ -128,66 +123,49 @@ local function StartHeartbeat()
     end)
 end
 
--- Остановка heartbeat
-local function StopHeartbeat()
-    HeartbeatRunning = false
-    if ModuleValid then
-        SendHeartbeat(nil, nil, "inactive")
-    end
-end
-
--- Автозапуск
-StartHeartbeat()
-
 -- Остановка при выходе
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == game:GetService("Players").LocalPlayer then
-        StopHeartbeat()
+        HeartbeatRunning = false
+        if ModuleValid then
+            SendHeartbeat(nil, nil, "inactive")
+        end
     end
 end)
 
 -- ========================================================
 -- 🛡️ ЗАЩИТА ОТ ПОДМЕНЫ
 -- ========================================================
--- Если кто-то попытается удалить или подменить переменные,
--- модуль перестанет работать и скрипт выключится
 spawn(function()
     while ModuleValid do
         wait(10)
         
-        -- Проверяем, что переменные не были подменены
         if not _G.Catalyst_HeartbeatActive then
             ModuleValid = false
-            StopHeartbeat()
             break
         end
         
-        -- Проверяем хеш
         if _G.Catalyst_ValidationHash ~= ValidationHash then
             ModuleValid = false
-            StopHeartbeat()
             break
         end
     end
     
-    -- Если модуль стал невалиден — выключаем скрипт
     if not ModuleValid then
         pcall(function()
             _G.Catalyst_Shutdown = true
-            game:GetService("Players").LocalPlayer:Kick("[Catalyst Hub] Security check failed. Please re-execute.")
+            game:GetService("Players").LocalPlayer:Kick("[Catalyst Hub] Security check failed.")
         end)
     end
 end)
 
--- Возвращаем API для использования в основном скрипте
+-- Возвращаем API
 return {
     IsValid = function() return ModuleValid end,
     GetHash = function() return ValidationHash end,
     SendHeartbeat = SendHeartbeat,
-    Stop = StopHeartbeat,
 }`;
 
-  // Заменяем хост
   return moduleCode.replace(/\$\{HOST\}/g, host);
 }
 
@@ -202,20 +180,24 @@ export default async function handler(req, res) {
   const host = req.headers.host;
   
   try {
-    // ========== GET ==========
     if (req.method === 'GET') {
-      const { action, userId, placeId, gameId, status, keyType, rank, hash, count } = req.query;
+      const { action, userId, placeId, gameId, status, keyType, rank, hash, count, password, targetUserId } = req.query;
 
-      // Валидация модуля
+      // Отдача модуля (публичный)
+      if (action === 'module') {
+        const moduleCode = generateHeartbeatModule(host);
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        return res.status(200).send(moduleCode);
+      }
+
+      // Валидация модуля (публичный)
       if (action === 'validate') {
         if (!userId || bannedUsers.has(userId)) {
           return res.status(200).send('INVALID');
         }
         
-        // Генерируем уникальный хеш для этой сессии
         const validationHash = generateHash(userId, Date.now().toString());
         
-        // Сохраняем сессию
         activeUsers.set(userId, {
           validationHash,
           placeId: placeId || 'unknown',
@@ -228,23 +210,20 @@ export default async function handler(req, res) {
         return res.status(200).send('VALID:' + validationHash);
       }
       
-      // Heartbeat
+      // Heartbeat (публичный)
       if (action === 'heartbeat') {
         if (!userId) return res.status(200).send('invalid');
         
-        // Проверяем бан
         if (bannedUsers.has(userId)) {
           return res.status(200).send('banned');
         }
         
         const userData = activeUsers.get(userId);
         
-        // Проверяем хеш
         if (!userData || userData.validationHash !== hash) {
           return res.status(200).send('invalid');
         }
         
-        // Обновляем данные
         userData.lastHeartbeat = Date.now();
         userData.heartbeatCount = parseInt(count) || 0;
         userData.status = status || 'active';
@@ -257,33 +236,26 @@ export default async function handler(req, res) {
         return res.status(200).send('keep alive');
       }
       
-      // Получить список активных пользователей (для админки)
+      // Админские действия
       if (action === 'list') {
-        const { password } = req.query;
         if (!isAdmin(password)) return res.status(401).json({ error: 'Unauthorized' });
         
         const users = [];
         for (const [id, data] of activeUsers) {
-          users.push({ userId: id, ...data });
+          users.push({ userId: id, ...data, lastHeartbeat: data.lastHeartbeat });
         }
         return res.status(200).json({ users, banned: Array.from(bannedUsers) });
       }
       
-      // Бан пользователя
       if (action === 'ban') {
-        const { password, targetUserId } = req.query;
         if (!isAdmin(password)) return res.status(401).json({ error: 'Unauthorized' });
-        
         bannedUsers.add(targetUserId);
         activeUsers.delete(targetUserId);
         return res.status(200).json({ success: true, banned: targetUserId });
       }
       
-      // Разбан
       if (action === 'unban') {
-        const { password, targetUserId } = req.query;
         if (!isAdmin(password)) return res.status(401).json({ error: 'Unauthorized' });
-        
         bannedUsers.delete(targetUserId);
         return res.status(200).json({ success: true, unbanned: targetUserId });
       }
@@ -296,18 +268,4 @@ export default async function handler(req, res) {
     console.error('Heartbeat error:', e);
     return res.status(500).send('error');
   }
-}
-
-// Генерация хеша
-function generateHash(userId, timestamp) {
-  let hash = '';
-  const chars = 'abcdef0123456789';
-  const seed = userId + timestamp;
-  
-  for (let i = 0; i < 64; i++) {
-    const idx = (seed.charCodeAt(i % seed.length) + i) % chars.length;
-    hash += chars[idx];
-  }
-  
-  return hash;
 }
