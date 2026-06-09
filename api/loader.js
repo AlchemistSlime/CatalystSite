@@ -1,17 +1,15 @@
 // api/loader.js
-// Catalyst Hub Loader — простая рабочая версия
+// Временный загрузчик с фиксированными играми
 
 export default async function handler(req, res) {
   const ua = req.headers['user-agent'] || '';
-  
-  // Проверяем, что запрос от Roblox
   if (!ua.includes('Roblox')) {
     return res.status(403).send('Access Denied: Roblox client required');
   }
 
-  // Lua-скрипт, который увидят пользователи
+  // Lua-скрипт (можно заменить через админку, изменив этот файл)
   const loaderScript = `-- ========================================================
--- CATALYST HUB - SIMPLE LOADER (v1.0)
+-- CATALYST HUB - LOADER
 -- ========================================================
 
 -- 📦 Сервисы
@@ -28,7 +26,7 @@ Junkie.provider = "Alchemist Hub"
 
 local KeyFileName = "Catalyst_Key.txt"
 
--- 🌐 База игр
+-- 🌐 База игр (редактируйте в этом файле)
 local SupportedGames = {
     [286090429] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystArsenal.lua",
     [142823291] = "https://raw.githubusercontent.com/AlchemistSlime/Catalyst/main/CatalystMM2.lua",
