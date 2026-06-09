@@ -56,12 +56,13 @@
 
       <!-- Таб: Games -->
       <div id="tab-games" class="tab-content active">
+        <!-- ... (оставьте без изменений) ... -->
         <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-6">
           <h2 class="text-xl font-bold mb-4">Add New Game</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <input id="newGameId" placeholder="PlaceId (e.g. 142823291)" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
-            <input id="newGameName" placeholder="Game Name (e.g. MM2)" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
-            <select id="newGameStatus" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500">
+            <input id="newGameId" placeholder="PlaceId" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-sm"/>
+            <input id="newGameName" placeholder="Name" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-sm"/>
+            <select id="newGameStatus" class="bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-sm">
               <option value="Undetected">Undetected</option>
               <option value="On Update">On Update</option>
               <option value="Patched">Patched</option>
@@ -69,75 +70,59 @@
           </div>
           <button id="addGameBtn" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Add Game</button>
         </div>
-
         <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
           <h2 class="text-xl font-bold mb-4">Manage Games</h2>
           <div id="gamesList" class="space-y-4"></div>
         </div>
       </div>
 
-      <!-- Таб: Universal Loader -->
+      <!-- Таб: Universal Loader (оставьте без изменений) -->
       <div id="tab-loader" class="tab-content">
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Universal Loader Script</h2>
-          <p class="text-purple-300/60 text-sm mb-2">This Lua script is sent to all users who execute the loader.</p>
-          <p class="text-purple-400/50 text-xs mb-4">Users run: <code class="text-green-400">loadstring(game:HttpGet("https://catalyst-sites.vercel.app/api/loader"))()</code></p>
-          <textarea id="loaderCode" rows="20" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4 resize-y"></textarea>
-          <div class="flex gap-4 mb-4">
-            <button id="loadLoaderBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-5 py-2 rounded-lg text-sm transition">Load Current</button>
-            <button id="updateLoaderBtn" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Update Loader</button>
-          </div>
-          <div id="loaderStatus" class="text-sm"></div>
-        </div>
+        <!-- ... ваш текущий код ... -->
       </div>
 
       <!-- Таб: Active Users -->
       <div id="tab-users" class="tab-content">
         <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Active Users (Heartbeat)</h2>
-          <button id="refreshUsersBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold">Active Users</h2>
+            <div class="flex items-center gap-4">
+              <span class="text-purple-300 text-sm">Online: <span id="onlineCount" class="text-green-400 font-bold text-lg">0</span></span>
+              <button id="refreshUsersBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm transition">Refresh</button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead><tr class="border-b border-purple-900/30 text-purple-300"><th class="py-3 px-4">User ID</th><th class="py-3 px-4">Place ID</th><th class="py-3 px-4">Rank</th><th class="py-3 px-4">Key Type</th><th class="py-3 px-4">Last Heartbeat</th></tr></thead>
+              <thead>
+                <tr class="border-b border-purple-900/30 text-purple-300">
+                  <th class="py-3 px-4">User ID</th>
+                  <th class="py-3 px-4">Place ID</th>
+                  <th class="py-3 px-4">Game</th>
+                  <th class="py-3 px-4">Rank</th>
+                  <th class="py-3 px-4">Key Type</th>
+                  <th class="py-3 px-4">Last Ping</th>
+                </tr>
+              </thead>
               <tbody id="usersBody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- Таб: Launch Logs -->
+      <!-- Таб: Launch Logs (оставьте без изменений) -->
       <div id="tab-logs" class="tab-content">
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Launch Logs</h2>
-          <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead><tr class="border-b border-purple-900/30 text-purple-300"><th class="py-3 px-4">Timestamp</th><th class="py-3 px-4">IP</th><th class="py-3 px-4">Game ID</th><th class="py-3 px-4">Game Name</th></tr></thead>
-              <tbody id="logsBody"></tbody>
-            </table>
-          </div>
-        </div>
+        <!-- ... -->
       </div>
 
-      <!-- Таб: Admin Logs -->
+      <!-- Таб: Admin Logs (оставьте без изменений) -->
       <div id="tab-adminlogs" class="tab-content">
-        <div class="bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-          <h2 class="text-xl font-bold mb-4">Admin Action Logs</h2>
-          <button id="refreshAdminLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh</button>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead><tr class="border-b border-purple-900/30 text-purple-300"><th class="py-3 px-4">Timestamp</th><th class="py-3 px-4">IP</th><th class="py-3 px-4">Action</th><th class="py-3 px-4">Details</th></tr></thead>
-              <tbody id="adminLogsBody"></tbody>
-            </table>
-          </div>
-        </div>
+        <!-- ... -->
       </div>
-
     </div>
   </div>
 
   <script>
-    // ============== АВТОРИЗАЦИЯ ==============
+    // ========== АВТОРИЗАЦИЯ (без изменений) ==========
     let authPassword = '';
     const savedPass = sessionStorage.getItem('admin_pass');
     if (savedPass) { document.getElementById('passwordInput').value = savedPass; authenticate(savedPass); }
@@ -164,7 +149,7 @@
       await loadAllData();
     }
 
-    // ============== API ==============
+    // ========== API ==========
     async function apiGet(action, params = '') {
       const res = await fetch(`/api/admin?action=${action}&password=${encodeURIComponent(authPassword)}${params}`);
       return res.json();
@@ -179,169 +164,48 @@
       return res.json();
     }
 
-    // ============== ЗАГРУЗКА ВСЕХ ДАННЫХ ==============
+    // ========== ЗАГРУЗКА ВСЕХ ДАННЫХ ==========
     async function loadAllData() {
-      const gamesData = await apiGet('getGames');
-      renderGamesList(gamesData.games || {});
-
-      const loaderData = await apiGet('loader');
-      document.getElementById('loaderCode').value = loaderData || '';
-
-      await loadActiveUsers();
-      await loadLogs();
-      await loadAdminLogs();
+      // ... ваш код загрузки игр, логов ...
+      loadActiveUsers(); // Добавляем вызов
     }
 
-    // ============== ИГРЫ ==============
-    function renderGamesList(games) {
-      const container = document.getElementById('gamesList');
-      const entries = Object.entries(games);
-
-      if (entries.length === 0) {
-        container.innerHTML = '<p class="text-purple-400/50 text-center py-8">No games added yet</p>';
-        return;
-      }
-
-      container.innerHTML = entries.map(([id, data]) => `
-        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-5">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">PlaceId</label>
-              <input type="text" class="w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" value="${id}" readonly />
-            </div>
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">Name</label>
-              <input type="text" class="game-name-input w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" value="${data.name || ''}" data-game="${id}" />
-            </div>
-            <div>
-              <label class="text-purple-300 text-xs mb-1 block">Status</label>
-              <select class="game-status-select w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-2 text-sm" data-game="${id}">
-                <option value="Undetected" ${data.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
-                <option value="On Update" ${data.status === 'On Update' ? 'selected' : ''}>On Update</option>
-                <option value="Patched" ${data.status === 'Patched' ? 'selected' : ''}>Patched</option>
-              </select>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button class="save-game-btn bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${id}">Save Changes</button>
-            <button class="delete-game-btn bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/40 px-4 py-2 rounded-lg text-xs font-semibold transition" data-game="${id}">Delete</button>
-          </div>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.save-game-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const game = btn.dataset.game;
-          const name = document.querySelector(`.game-name-input[data-game="${game}"]`).value;
-          const status = document.querySelector(`.game-status-select[data-game="${game}"]`).value;
-          await apiPost({ action: 'updateGame', game, name, status });
-          btn.textContent = 'Saved!'; btn.classList.add('!bg-green-600');
-          setTimeout(() => { btn.textContent = 'Save Changes'; btn.classList.remove('!bg-green-600'); }, 1500);
-        });
-      });
-
-      document.querySelectorAll('.delete-game-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          if (!confirm(`Delete game ${btn.dataset.game}?`)) return;
-          await apiPost({ action: 'deleteGame', game: btn.dataset.game });
-          await loadAllData();
-        });
-      });
-    }
-
-    document.getElementById('addGameBtn').addEventListener('click', async () => {
-      const id = document.getElementById('newGameId').value.trim();
-      const name = document.getElementById('newGameName').value.trim();
-      const status = document.getElementById('newGameStatus').value;
-      if (!id || !name) return alert('PlaceId and Name required');
-      await apiPost({ action: 'addGame', game: id, name, status });
-      document.getElementById('newGameId').value = '';
-      document.getElementById('newGameName').value = '';
-      await loadAllData();
-    });
-
-    // ============== LOADER ==============
-    document.getElementById('loadLoaderBtn').addEventListener('click', async () => {
-      const data = await apiGet('loader');
-      document.getElementById('loaderCode').value = data || '';
-      document.getElementById('loaderStatus').innerHTML = '<span class="text-green-400">Loader loaded from server</span>';
-    });
-
-    document.getElementById('updateLoaderBtn').addEventListener('click', async () => {
-      const loaderCode = document.getElementById('loaderCode').value;
-      if (!loaderCode.trim()) return alert('Loader cannot be empty');
-      const result = await apiPost({ action: 'updateLoader', loaderScript: loaderCode });
-      if (result.success) {
-        document.getElementById('loaderStatus').innerHTML = '<span class="text-green-400">Loader updated successfully!</span>';
-        const btn = document.getElementById('updateLoaderBtn');
-        btn.textContent = 'Updated!'; btn.classList.add('!bg-green-600');
-        setTimeout(() => { btn.textContent = 'Update Loader'; btn.classList.remove('!bg-green-600'); }, 2000);
-      } else {
-        document.getElementById('loaderStatus').innerHTML = `<span class="text-red-400">Error: ${result.error || 'Unknown'}</span>`;
-      }
-    });
-
-    // ============== ACTIVE USERS ==============
+    // ========== АКТИВНЫЕ ПОЛЬЗОВАТЕЛИ ==========
     async function loadActiveUsers() {
-      const data = await apiGet('activeUsers');
-      const tbody = document.getElementById('usersBody');
-      if (!data.users || data.users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="py-8 px-4 text-center text-purple-400/50">No active users</td></tr>';
-        return;
+      try {
+        const res = await fetch('/api/heartbeat?action=list');
+        const data = await res.json();
+        const users = data.users || [];
+        document.getElementById('onlineCount').textContent = data.count || 0;
+
+        const tbody = document.getElementById('usersBody');
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="py-8 px-4 text-center text-purple-400/50">No active users</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+          <tr class="border-b border-purple-900/20 hover:bg-purple-900/10">
+            <td class="py-3 px-4 font-mono text-xs">${u.userId}</td>
+            <td class="py-3 px-4 text-sm">${u.placeId}</td>
+            <td class="py-3 px-4 text-sm">${u.gameName}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.rank === 'Premium' || u.rank === 'Ultimate' ? 'bg-purple-600/30 text-purple-300' : 'bg-gray-600/30 text-gray-300'}">${u.rank}</span>
+            </td>
+            <td class="py-3 px-4 text-sm">${u.keyType}</td>
+            <td class="py-3 px-4 text-xs text-purple-400">${new Date(u.lastPing).toLocaleTimeString()}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load active users:', e);
       }
-      tbody.innerHTML = data.users.map(u => `
-        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10">
-          <td class="py-3 px-4 font-mono text-xs">${u.userId}</td>
-          <td class="py-3 px-4 text-sm">${u.placeId || '?'}</td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.rank === 'Premium' || u.rank === 'Ultimate' ? 'bg-purple-600/30 text-purple-300' : 'bg-gray-600/30 text-gray-300'}">${u.rank}</span></td>
-          <td class="py-3 px-4 text-sm">${u.keyType || 'Free'}</td>
-          <td class="py-3 px-4 text-xs text-purple-400">${new Date(u.lastHeartbeat).toLocaleTimeString()}</td>
-        </tr>
-      `).join('');
     }
 
-    document.getElementById('refreshUsersBtn').addEventListener('click', loadActiveUsers);
-    setInterval(loadActiveUsers, 15000);
+    document.getElementById('refreshUsersBtn')?.addEventListener('click', loadActiveUsers);
+    // Автообновление каждые 30 секунд
+    setInterval(loadActiveUsers, 30000);
 
-    // ============== LOGS ==============
-    async function loadLogs() {
-      const data = await apiGet('logs');
-      const tbody = document.getElementById('logsBody');
-      if (!data.launchLogs || data.launchLogs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-8 px-4 text-center text-purple-400/50">No launch logs</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.launchLogs.slice().reverse().slice(0, 100).map(l => `
-        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10">
-          <td class="py-3 px-4 text-sm text-purple-300">${new Date(l.timestamp).toLocaleString()}</td>
-          <td class="py-3 px-4 font-mono text-xs">${l.ip}</td>
-          <td class="py-3 px-4 text-sm">${l.game || ''}</td>
-          <td class="py-3 px-4 text-sm">${l.gameName || ''}</td>
-        </tr>
-      `).join('');
-    }
-
-    async function loadAdminLogs() {
-      const data = await apiGet('logs');
-      const tbody = document.getElementById('adminLogsBody');
-      if (!data.adminLogs || data.adminLogs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-8 px-4 text-center text-purple-400/50">No admin actions</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.adminLogs.slice().reverse().slice(0, 100).map(l => `
-        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10">
-          <td class="py-3 px-4 text-sm text-purple-300">${new Date(l.timestamp).toLocaleString()}</td>
-          <td class="py-3 px-4 font-mono text-xs">${l.ip}</td>
-          <td class="py-3 px-4 text-sm font-semibold text-purple-400">${l.action}</td>
-          <td class="py-3 px-4 text-sm">${l.details}</td>
-        </tr>
-      `).join('');
-    }
-
-    document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
-    document.getElementById('refreshAdminLogsBtn').addEventListener('click', loadAdminLogs);
-
-    // ============== ТАБЫ ==============
+    // ========== ТАБЫ (без изменений) ==========
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -350,6 +214,9 @@
         document.getElementById(btn.dataset.tab).classList.add('active');
       });
     });
+
+    // ========== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ (Games, Loader, Logs) оставьте как есть ==========
+    // ...
   </script>
 </body>
 </html>
