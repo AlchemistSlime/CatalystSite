@@ -1,197 +1,107 @@
-// api/admin.js
-// Админ-панель для управления статусами, скриптами и просмотра логов
+// api/loader.js
+// Serverless функция для выдачи Lua-скриптов клиентам Roblox
 
-const ADMIN_PASSWORD = 'admin123';
-
-const gameStatuses = {
-  mm2: 'Undetected',
-  bloxfruits: 'On Update',
-  adoptme: 'Undetected',
-};
-
-const scriptVersions = {
+const GAME_SCRIPTS = {
   mm2: {
-    free: {
-      current: `print("[Catalyst] MM2 Free script loaded!")\n-- Auto farm, basic ESP`,
-      history: [],
-    },
-    premium: {
-      current: `print("[Catalyst] MM2 Premium script loaded!")\n-- Aimbot, ESP, God mode, Instant kill`,
-      history: [],
-    },
+    free: `print("[Catalyst] MM2 Free script loaded!")
+-- Auto farm, basic ESP`,
+    premium: `print("[Catalyst] MM2 Premium script loaded!")
+-- Aimbot, ESP, God mode, Instant kill`,
   },
   bloxfruits: {
-    free: {
-      current: `print("[Catalyst] Blox Fruits Free script loaded!")\n-- Basic auto farm`,
-      history: [],
-    },
-    premium: {
-      current: `print("[Catalyst] Blox Fruits Premium script loaded!")\n-- Auto farm, Teleports, Devil fruit sniper, Raid helper`,
-      history: [],
-    },
+    free: `print("[Catalyst] Blox Fruits Free script loaded!")
+-- Basic auto farm`,
+    premium: `print("[Catalyst] Blox Fruits Premium script loaded!")
+-- Auto farm, Teleports, Devil fruit sniper, Raid helper`,
   },
   adoptme: {
-    free: {
-      current: `print("[Catalyst] Adopt Me Free script loaded!")\n-- Basic money farm`,
-      history: [],
-    },
-    premium: {
-      current: `print("[Catalyst] Adopt Me Premium script loaded!")\n-- Auto money farm, Pet dupe, Trade helper`,
-      history: [],
-    },
+    free: `print("[Catalyst] Adopt Me Free script loaded!")
+-- Basic money farm`,
+    premium: `print("[Catalyst] Adopt Me Premium script loaded!")
+-- Auto money farm, Pet dupe, Trade helper`,
   },
 };
 
-const launchLogs = [];
-
-function isAdminAuthorized(password) {
-  return password === ADMIN_PASSWORD;
+function minifyLua(code) {
+  let minified = code
+    .replace(/--\[\[.*?]]/gs, '')
+    .replace(/--.*$/gm, '')
+    .replace(/\n\s*\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+  return minified;
 }
 
-function addLog(ip, game, tier) {
-  launchLogs.push({
-    timestamp: new Date().toISOString(),
-    ip,
+async function verifySellAuthKey(key) {
+  try {
+    const response = await fetch('https://sellauth.com/api/v1/licenses/verify', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.SELLAUTH_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ license_key: key }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (data.success && data.license?.product_id === process.env.SELLAUTH_PRODUCT_ID) {
+      return 'premium';
+    }
+    return null;
+  } catch (e) {
+    console.error('SellAuth verification error:', e);
+    return null;
+  }
+}
+
+function sendLog(game, tier, ip, host) {
+  const url = `https://${host}/api/admin`;
+  const body = JSON.stringify({
+    action: 'log',
     game,
     tier,
+    ip,
   });
-}
 
-function updateGameStatus(game, status) {
-  if (!['Undetected', 'On Update', 'Patched'].includes(status)) {
-    throw new Error('Invalid status');
-  }
-  if (!gameStatuses.hasOwnProperty(game)) {
-    throw new Error('Game not found');
-  }
-  gameStatuses[game] = status;
-  return gameStatuses[game];
-}
-
-function updateScript(game, tier, newCode) {
-  if (!scriptVersions[game] || !scriptVersions[game][tier]) {
-    throw new Error('Game or tier not found');
-  }
-  const entry = scriptVersions[game][tier];
-  entry.history.push(entry.current);
-  entry.current = newCode;
-  return entry.current;
-}
-
-function rollbackScript(game, tier) {
-  const entry = scriptVersions[game]?.[tier];
-  if (!entry) throw new Error('Game or tier not found');
-  if (entry.history.length === 0) throw new Error('No previous version to rollback');
-
-  const previous = entry.history.pop();
-  entry.current = previous;
-  return entry.current;
-}
-
-function getPublicStatus() {
-  return Object.entries(gameStatuses).map(([game, status]) => ({ game, status }));
-}
-
-function getLogs() {
-  return launchLogs;
-}
-
-function getScriptCode(game, tier) {
-  if (scriptVersions[game] && scriptVersions[game][tier]) {
-    return scriptVersions[game][tier].current;
-  }
-  return null;
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+  }).catch(() => {});
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  const ua = req.headers['user-agent'] || '';
+  if (!ua.includes('Roblox')) {
+    return res.status(403).send('Access Denied: Roblox client required');
   }
 
-  try {
-    if (req.method === 'GET') {
-      const { action, password, game, tier } = req.query;
+  const { game, tier = 'free', key } = req.query;
 
-      if (action === 'status') {
-        const statuses = getPublicStatus();
-        return res.status(200).json({ games: statuses });
-      }
-
-      if (action === 'logs') {
-        if (!isAdminAuthorized(password)) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-        const logs = getLogs();
-        return res.status(200).json({ logs });
-      }
-
-      if (action === 'getScript') {
-        if (!isAdminAuthorized(password)) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-        if (!game || !tier) {
-          return res.status(400).json({ error: 'Missing game or tier' });
-        }
-        const code = getScriptCode(game, tier);
-        if (code === null) {
-          return res.status(404).json({ error: 'Script not found' });
-        }
-        return res.status(200).json({ game, tier, code });
-      }
-
-      return res.status(400).json({ error: 'Invalid action' });
-    }
-
-    if (req.method === 'POST') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { action, password, game, tier, status, code, ip } = body;
-
-      if (action === 'log') {
-        if (!game || !ip) {
-          return res.status(400).json({ error: 'Missing game or ip' });
-        }
-        addLog(ip, game, tier || 'free');
-        return res.status(200).json({ success: true });
-      }
-
-      if (!isAdminAuthorized(password)) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      if (action === 'updateStatus') {
-        if (!game || !status) {
-          return res.status(400).json({ error: 'Missing game or status' });
-        }
-        const newStatus = updateGameStatus(game, status);
-        return res.status(200).json({ success: true, game, status: newStatus });
-      }
-
-      if (action === 'updateScript') {
-        if (!game || !tier || !code) {
-          return res.status(400).json({ error: 'Missing game, tier or code' });
-        }
-        const newCode = updateScript(game, tier, code);
-        return res.status(200).json({ success: true, game, tier, code: newCode });
-      }
-
-      if (action === 'rollback') {
-        if (!game || !tier) {
-          return res.status(400).json({ error: 'Missing game or tier' });
-        }
-        const restoredCode = rollbackScript(game, tier);
-        return res.status(200).json({ success: true, game, tier, code: restoredCode });
-      }
-
-      return res.status(400).json({ error: 'Invalid action' });
-    }
-
-    return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error) {
-    console.error('Admin error:', error);
-    return res.status(500).json({ error: error.message });
+  if (!game || !GAME_SCRIPTS[game]) {
+    return res.status(400).send('Invalid or missing game parameter');
   }
+
+  let accessTier = 'free';
+  if (tier === 'premium') {
+    if (!key) {
+      return res.status(403).send('Premium key required');
+    }
+    const verifiedTier = await verifySellAuthKey(key);
+    if (verifiedTier !== 'premium') {
+      return res.status(403).send('Invalid or expired premium key');
+    }
+    accessTier = 'premium';
+  }
+
+  const rawCode = GAME_SCRIPTS[game][accessTier];
+  const luaCode = minifyLua(rawCode);
+
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  sendLog(game, accessTier, clientIp, req.headers.host);
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  return res.status(200).send(luaCode);
 }
