@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catalyst Admin Panel</title>
+  <title>Catalyst - Roblox Script Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,266 +16,644 @@
               darker: '#07040f',
               neon: '#d946ef',
               pink: '#ec4899',
+              accent: '#7c3aed',
             },
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['Inter', 'sans-serif'],
           },
         },
       },
     };
   </script>
   <style>
-    body { background: #07040f; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
     .gradient-text {
+      background: linear-gradient(135deg, #d946ef, #a855f7, #7c3aed, #ec4899);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease-in-out infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-static {
       background: linear-gradient(135deg, #d946ef, #a855f7, #ec4899);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #07040f; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 3px; }
+
+    .btn-glow {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-glow:hover {
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.8), 0 0 60px rgba(217, 70, 239, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-8px);
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Фон с точками */
+    .dot-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      background: #07040f;
+    }
+
+    .dot {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(168, 85, 247, 0.4);
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(139, 92, 246, 0.3);
+      transition: opacity 0.5s ease-out;
+      will-change: transform, opacity;
+    }
+
+    @keyframes dotDrift {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.4;
+      }
+      30% {
+        opacity: 0.7;
+      }
+      60% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(70px);
+        opacity: 0;
+      }
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.8); opacity: 0.8; }
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Анимации появления */
+    .animate-hero {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  visibility 0s 0.8s;
+    }
+
+    .animate-hero.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  visibility 0s 0s;
+    }
+
+    .animate-nav {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-20px);
+      transition: opacity 0.5s ease-out,
+                  transform 0.5s ease-out,
+                  visibility 0s 0.5s;
+    }
+
+    .animate-nav.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition: opacity 0.5s ease-out,
+                  transform 0.5s ease-out,
+                  visibility 0s 0s;
+    }
+
+    .section-reveal {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(40px);
+      transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  visibility 0s 0.7s;
+    }
+
+    .section-reveal.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  visibility 0s 0s;
+    }
+
+    /* Фиксация ширины кнопки при анимации */
+    .btn-fixed-width {
+      min-width: 160px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #07040f;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border-radius: 3px;
+    }
   </style>
 </head>
-<body class="text-white font-sans min-h-screen p-6">
-  <div class="max-w-5xl mx-auto">
+<body class="bg-cyber-darker text-white font-sans min-h-screen relative">
 
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
-      <div>
-        <h1 class="text-3xl font-bold gradient-text">Catalyst Admin Panel</h1>
-        <p class="text-purple-400/50 text-sm mt-1">Manage scripts, statuses, and view logs</p>
-      </div>
-      <div class="flex gap-3">
-        <input id="passwordInput" type="password" placeholder="Admin password" class="bg-cyber-dark border border-purple-900/50 rounded-lg px-4 py-2 text-white placeholder-purple-400/50 focus:outline-none focus:border-purple-500 w-48" />
-        <button id="authBtn" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition whitespace-nowrap">Log In</button>
-      </div>
-    </div>
+  <!-- Фон с точками -->
+  <div class="dot-bg" id="dotBg"></div>
 
-    <div id="authStatus" class="mb-6 text-sm"></div>
+  <!-- Основной контент -->
+  <div class="relative z-10">
 
-    <div id="statusPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-        <span class="w-2 h-2 bg-green-400 rounded-full"></span>
-        Game Status Management
-      </h2>
-      <div id="gamesList" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
-    </div>
+    <!-- Навигация -->
+    <nav id="navbar" class="animate-nav fixed top-0 left-0 right-0 z-50">
+      <div class="bg-cyber-dark/80 backdrop-blur-xl border-b border-purple-900/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <a href="#" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="text-2xl font-bold gradient-text">CATALYST</span>
+          </a>
 
-    <div id="scriptPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-        <span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
-        Script Editor
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="text-purple-300 text-sm mb-1 block">Game</label>
-          <select id="scriptGame" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
-            <option value="mm2">Murder Mystery 2</option>
-            <option value="bloxfruits">Blox Fruits</option>
-            <option value="adoptme">Adopt Me</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-purple-300 text-sm mb-1 block">Tier</label>
-          <select id="scriptTier" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-2 text-white">
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-          </select>
+          <div class="hidden md:flex items-center gap-1">
+            <a href="#scripts" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Scripts</a>
+            <a href="#kernel" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Kernel</a>
+            <a href="#pricing" class="px-4 py-2 text-sm font-medium text-purple-200/80 hover:text-white hover:bg-purple-600/20 rounded-lg transition-all duration-300">Premium</a>
+          </div>
+
+          <button id="copyLoaderBtn" class="btn-glow bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-fixed-width">
+            Copy Loader
+          </button>
+
+          <button id="mobileMenuBtn" class="md:hidden p-2 text-purple-300 hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
         </div>
       </div>
-      <label class="text-purple-300 text-sm mb-1 block">Script Code</label>
-      <textarea id="scriptCode" rows="10" class="w-full bg-cyber-darker border border-purple-900/50 rounded-lg px-4 py-3 text-green-400 font-mono text-sm focus:outline-none focus:border-purple-500 mb-4 resize-y"></textarea>
-      <div class="flex gap-4 flex-wrap">
-        <button id="loadScriptBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-5 py-2 rounded-lg text-sm transition">Load Script</button>
-        <button id="updateScriptBtn" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Update Script</button>
-        <button id="rollbackBtn" class="border-2 border-yellow-600 text-yellow-400 hover:bg-yellow-600/20 px-5 py-2 rounded-lg text-sm font-semibold transition">Rollback</button>
-      </div>
-    </div>
 
-    <div id="logsPanel" class="hidden bg-cyber-dark border border-purple-900/30 rounded-2xl p-6">
-      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-        <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
-        Launch Logs
-      </h2>
-      <button id="refreshLogsBtn" class="bg-cyber-darker border border-purple-900/50 hover:border-purple-500 px-4 py-2 rounded-lg text-sm mb-4 transition">Refresh Logs</button>
-      <div id="logsContainer" class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-purple-900/30 text-purple-300">
-              <th class="py-3 px-4">Timestamp</th>
-              <th class="py-3 px-4">IP</th>
-              <th class="py-3 px-4">Game</th>
-              <th class="py-3 px-4">Tier</th>
-            </tr>
-          </thead>
-          <tbody id="logsBody" class="text-purple-200/70"></tbody>
-        </table>
+      <div id="mobileMenu" class="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-purple-900/30 hidden">
+        <div class="px-6 py-4 space-y-2">
+          <a href="#scripts" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Scripts</a>
+          <a href="#kernel" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Kernel</a>
+          <a href="#pricing" class="block px-4 py-3 text-purple-200 hover:text-white hover:bg-purple-600/20 rounded-lg transition">Premium</a>
+        </div>
       </div>
-    </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="flex flex-col items-center justify-center min-h-screen text-center px-6 pt-20">
+      <div class="max-w-4xl">
+        <div class="animate-hero" id="heroTitle">
+          <h1 class="text-6xl md:text-8xl font-black leading-tight mb-6 tracking-tight">
+            <span class="gradient-text">CATALYST:</span><br />
+            <span class="text-white">UP YOUR GAMEPLAY.</span>
+          </h1>
+        </div>
+        <div class="animate-hero" id="heroDesc">
+          <p class="text-purple-200/70 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
+            Dominate every Roblox server with lightning-fast, undetected scripts.
+            <br class="hidden md:block" />
+            <span class="text-purple-400 font-semibold">Free for all. Premium for legends.</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-5 justify-center animate-hero" id="heroBtns">
+          <button id="heroCopyBtn" class="btn-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 btn-fixed-width">
+            Copy Loader
+          </button>
+          <button id="joinDiscordBtn" class="border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-8 py-4 rounded-full text-lg font-bold transition-all duration-300 backdrop-blur-sm btn-fixed-width">
+            Join Our Community
+          </button>
+        </div>
+
+        <div class="mt-20 animate-hero" id="scrollIndicator">
+          <div class="animate-bounce">
+            <svg class="w-8 h-8 mx-auto text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <p class="text-purple-400/60 text-sm mt-3">Scroll to explore</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Секция "Our Scripts" -->
+    <section id="scripts" class="section-reveal max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Our Scripts</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
+          Undetected, regularly updated, ready to execute. Choose your game and dominate.
+        </p>
+      </div>
+      <div id="scriptsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+    </section>
+
+    <!-- Секция Catalyst Kernel -->
+    <section id="kernel" class="section-reveal py-24 relative">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-950/20 to-transparent"></div>
+      <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-block px-6 py-2 bg-purple-600/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium mb-8 backdrop-blur-sm">
+          IN DEVELOPMENT
+        </div>
+        <h2 class="text-6xl font-black mb-6">
+          Catalyst <span class="gradient-text">Kernel</span>
+        </h2>
+        <p class="text-purple-200/60 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+          Our proprietary Level 8 executor. Built from scratch with Lua 5.1/5.2 support,
+          unparalleled stability, and zero detection vectors.
+        </p>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">100% UNC</div>
+            <p class="text-purple-200/50 text-sm">Maximum script compatibility with full Lua environment.</p>
+          </div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">Instant Injection</div>
+            <p class="text-purple-200/50 text-sm">Zero-delay script execution without crashing.</p>
+          </div>
+          <div class="bg-cyber-dark/50 border border-purple-900/30 rounded-xl p-6 backdrop-blur-sm">
+            <div class="text-purple-400 text-2xl font-bold mb-2">Undetected</div>
+            <p class="text-purple-200/50 text-sm">Advanced anti-detection bypassing Byfron/Hyperion.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Секция Pricing -->
+    <section id="pricing" class="section-reveal max-w-7xl mx-auto px-6 py-24">
+      <div class="text-center mb-16">
+        <h2 class="text-5xl font-black gradient-text-static mb-4">Choose Your Power</h2>
+        <p class="text-purple-200/60 text-lg max-w-xl mx-auto">
+          Want to be the leader of every server? Unlock Premium and access exclusive scripts, priority support, and early Kernel access.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <!-- Standard -->
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Standard</h3>
+          <p class="text-purple-300/60 text-sm mb-8">Free forever</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All free scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Basic features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Community Discord</li>
+            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No premium scripts</li>
+            <li class="flex items-center gap-2"><span class="text-red-400 font-bold">-</span> No priority support</li>
+          </ul>
+          <button class="mt-auto border-2 border-purple-500/50 text-purple-300 px-6 py-3 rounded-full font-semibold text-sm cursor-default">
+            Current Plan
+          </button>
+        </div>
+        <!-- Premium (Popular) -->
+        <div class="card-hover bg-gradient-to-b from-purple-900/40 to-cyber-dark/90 border-2 border-purple-500 rounded-2xl p-8 flex flex-col items-center text-center transform md:scale-105 relative">
+          <div class="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full">
+            MOST POPULAR
+          </div>
+          <h3 class="text-2xl font-bold mb-1 mt-2">Premium</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$9.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Standard features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All premium scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Aimbot, ESP, Auto Farm</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Priority support</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel early access</li>
+          </ul>
+          <a href="https://sellauth.com/your-premium-product" target="_blank" class="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-6 py-3 rounded-full font-bold text-white text-sm transition-all duration-300 btn-glow text-center">
+            Buy Premium
+          </a>
+        </div>
+        <!-- Ultimate -->
+        <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-8 flex flex-col items-center text-center backdrop-blur-sm">
+          <h3 class="text-2xl font-bold mb-1">Ultimate</h3>
+          <p class="text-purple-300/60 text-sm mb-8">$19.99 / month</p>
+          <ul class="text-left text-purple-200/70 space-y-3 mb-10 text-sm">
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> All Premium features</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Exclusive Ultimate scripts</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Custom script requests</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Direct developer chat</li>
+            <li class="flex items-center gap-2"><span class="text-green-400 font-bold">+</span> Kernel guaranteed access</li>
+          </ul>
+          <a href="https://sellauth.com/your-ultimate-product" target="_blank" class="mt-auto w-full border-2 border-purple-500/50 text-purple-300 hover:text-white hover:border-purple-400 hover:bg-purple-600/10 px-6 py-3 rounded-full font-bold text-sm transition-all duration-300 text-center">
+            Buy Ultimate
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="border-t border-purple-900/30 py-10">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg"></div>
+          <span class="gradient-text font-bold">CATALYST</span>
+        </div>
+        <p class="text-purple-400/50 text-sm">2026 Catalyst Hub. Not affiliated with Roblox Corporation.</p>
+        <div class="flex gap-6 text-purple-400/50 text-sm">
+          <a href="#" class="hover:text-purple-300 transition">Terms</a>
+          <a href="#" class="hover:text-purple-300 transition">Privacy</a>
+          <a href="#" class="hover:text-purple-300 transition">Contact</a>
+        </div>
+      </div>
+    </footer>
 
   </div>
 
   <script>
-    let authPassword = '';
+    // ============== ФОН С ТОЧКАМИ ==============
+    function createDotBackground() {
+      const container = document.getElementById('dotBg');
+      if (!container) return;
 
-    const savedPass = sessionStorage.getItem('admin_pass');
-    if (savedPass) {
-      document.getElementById('passwordInput').value = savedPass;
-      authenticate(savedPass);
-    }
+      container.innerHTML = '';
 
-    document.getElementById('authBtn').addEventListener('click', () => {
-      const pass = document.getElementById('passwordInput').value;
-      if (!pass) return alert('Enter password');
-      sessionStorage.setItem('admin_pass', pass);
-      authenticate(pass);
-    });
+      const count = 100;
+      const fragment = document.createDocumentFragment();
 
-    document.getElementById('passwordInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('authBtn').click();
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+
+        const size = Math.random() * 8 + 3;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const duration = Math.random() * 30 + 20;
+        const delay = Math.random() * 15;
+
+        const isPulse = Math.random() > 0.6;
+        const animation = isPulse
+          ? `dotPulse ${Math.random() * 4 + 3}s ease-in-out infinite`
+          : `dotDrift ${duration}s linear infinite`;
+
+        dot.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${left}%;
+          top: ${top}%;
+          animation: ${animation};
+          animation-delay: ${delay}s;
+          opacity: ${Math.random() * 0.4 + 0.3};
+        `;
+
+        dot.dataset.baseOpacity = dot.style.opacity;
+
+        fragment.appendChild(dot);
       }
-    });
 
-    async function authenticate(pass) {
-      authPassword = pass;
-      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(pass)}`);
-      if (res.status === 401) {
-        document.getElementById('authStatus').innerHTML = '<span class="text-red-400">Invalid password</span>';
-        hidePanels();
-        return;
+      container.appendChild(fragment);
+    }
+
+    function setupDotsFade() {
+      const dots = document.querySelectorAll('.dot');
+      if (dots.length === 0) return;
+
+      window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const scrollPercent = Math.min(scrollY / (maxScroll || 1), 1);
+
+        dots.forEach(dot => {
+          const baseOpacity = parseFloat(dot.dataset.baseOpacity) || 0.4;
+          const newOpacity = baseOpacity * (1 - scrollPercent * 0.7);
+          dot.style.opacity = Math.max(newOpacity, 0.03);
+        });
+      }, { passive: true });
+    }
+
+    // ============== АНИМАЦИИ ==============
+    function setupAnimations() {
+      const navbar = document.getElementById('navbar');
+      if (navbar) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            navbar.classList.add('visible');
+          });
+        });
       }
-      document.getElementById('authStatus').innerHTML = '<span class="text-green-400">Authenticated successfully</span>';
-      showPanels();
-      loadAllData();
-    }
 
-    function hidePanels() {
-      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+      const heroElements = [
+        { id: 'heroTitle', delay: 300 },
+        { id: 'heroDesc', delay: 600 },
+        { id: 'heroBtns', delay: 900 },
+        { id: 'scrollIndicator', delay: 1300 },
+      ];
+
+      heroElements.forEach(({ id, delay }) => {
+        const el = document.getElementById(id);
+        if (el) {
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              el.classList.add('visible');
+            });
+          }, delay);
+        }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            requestAnimationFrame(() => {
+              entry.target.classList.add('visible');
+            });
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+      document.querySelectorAll('.section-reveal').forEach(section => {
+        observer.observe(section);
       });
     }
 
-    function showPanels() {
-      ['statusPanel', 'scriptPanel', 'logsPanel'].forEach(id => {
-        document.getElementById(id).classList.remove('hidden');
+    // ============== МОБИЛЬНОЕ МЕНЮ ==============
+    function setupMobileMenu() {
+      const btn = document.getElementById('mobileMenuBtn');
+      const menu = document.getElementById('mobileMenu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+      menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => menu.classList.add('hidden'));
       });
     }
 
-    async function apiCall(body) {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, password: authPassword }),
+    // ============== ЗАГРУЗКА СТАТУСОВ ==============
+    async function loadStatuses() {
+      try {
+        const res = await fetch('/api/admin?action=status');
+        const data = await res.json();
+        return data.games || [];
+      } catch (e) {
+        console.error('Failed to load statuses:', e);
+        return [];
+      }
+    }
+
+    function renderScriptCards(statuses) {
+      const container = document.getElementById('scriptsContainer');
+      if (!container) return;
+
+      // Игры синхронизированы с api/admin.js: mm2, bloxfruits, adoptme
+      const games = [
+        { id: 'mm2', name: 'Murder Mystery 2', desc: 'Auto farm, ESP, God mode, instant kill.' },
+        { id: 'bloxfruits', name: 'Blox Fruits', desc: 'Auto farm, teleports, devil fruit sniper, raid helper.' },
+        { id: 'adoptme', name: 'Adopt Me', desc: 'Auto money farm, pet dupe, trade helper.' },
+      ];
+
+      container.innerHTML = games.map(game => {
+        const statusObj = statuses.find(s => s.game === game.id);
+        const status = statusObj ? statusObj.status : 'Unknown';
+        const statusStyles = {
+          'Undetected': 'bg-green-600/20 text-green-400 border-green-500/30',
+          'On Update': 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
+          'Patched': 'bg-red-600/20 text-red-400 border-red-500/30',
+        };
+        const statusClass = statusStyles[status] || 'bg-gray-600/20 text-gray-400 border-gray-500/30';
+
+        return `
+          <div class="card-hover bg-cyber-dark/80 border border-purple-900/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center mb-5 border border-purple-500/20">
+              <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">${game.name}</h3>
+            <p class="text-purple-200/50 text-sm mb-4">${game.desc}</p>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${statusClass}">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              ${status.toUpperCase()}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============== КНОПКИ КОПИРОВАНИЯ ==============
+    function getLoaderScript() {
+      const origin = window.location.origin;
+      return `--[[ Catalyst Hub Loader ]]
+local placeId = game.PlaceId
+local gameInfo = game:GetService("MarketplaceService"):GetProductInfo(placeId)
+local gameName = gameInfo.Name:gsub("%s+", ""):lower()
+local tier = "free"
+local url = "${origin}/api/loader?game="..gameName.."&tier="..tier
+
+-- Premium users: uncomment and add your key
+-- url = url .. "&key=YOUR_PREMIUM_KEY"
+
+loadstring(game:HttpGet(url))()`;
+    }
+
+    async function copyLoader() {
+      const text = getLoaderScript();
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return true;
+      }
+    }
+
+    function setupCopyButton(btnId) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        const originalText = btn.textContent;
+        const success = await copyLoader();
+        if (success) {
+          btn.textContent = 'Copied!';
+          btn.classList.add('!bg-green-600', '!from-green-600', '!to-green-500');
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('!bg-green-600', '!from-green-600', '!to-green-500');
+          }, 2000);
+        }
       });
-      return res.json();
     }
 
-    async function loadAllData() {
-      const statusRes = await fetch('/api/admin?action=status');
-      const statusData = await statusRes.json();
-      renderGamesList(statusData.games || []);
-
-      loadLogs();
+    // ============== КНОПКА DISCORD — ОТКРЫВАЕТ ВКЛАДКУ ==============
+    function setupDiscordButton() {
+      const btn = document.getElementById('joinDiscordBtn');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        window.open('https://discord.gg/your-invite-code', '_blank');
+      });
     }
 
-    function renderGamesList(games) {
-      const container = document.getElementById('gamesList');
-      container.innerHTML = games.map(g => `
-        <div class="bg-cyber-darker border border-purple-900/30 rounded-xl p-4 flex flex-col items-center">
-          <span class="font-bold text-lg capitalize">${g.game}</span>
-          <select class="statusSelect mt-3 w-full bg-cyber-dark border border-purple-900/50 rounded-lg px-3 py-1.5 text-sm text-white text-center" data-game="${g.game}">
-            <option value="Undetected" ${g.status === 'Undetected' ? 'selected' : ''}>Undetected</option>
-            <option value="On Update" ${g.status === 'On Update' ? 'selected' : ''}>On Update</option>
-            <option value="Patched" ${g.status === 'Patched' ? 'selected' : ''}>Patched</option>
-          </select>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.statusSelect').forEach(select => {
-        select.addEventListener('change', async (e) => {
-          const game = e.target.dataset.game;
-          const status = e.target.value;
-          const result = await apiCall({ action: 'updateStatus', game, status });
-          if (result.success) {
-            e.target.classList.add('!border-green-500');
-            setTimeout(() => e.target.classList.remove('!border-green-500'), 1000);
-          } else {
-            alert('Error: ' + (result.error || 'Unknown'));
+    // ============== ПЛАВНЫЙ СКРОЛЛ ==============
+    function setupSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         });
       });
     }
 
-    async function loadLogs() {
-      const res = await fetch(`/api/admin?action=logs&password=${encodeURIComponent(authPassword)}`);
-      const data = await res.json();
-      const tbody = document.getElementById('logsBody');
-      if (!data.logs || data.logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-8 px-4 text-purple-400/50 text-center">No logs recorded yet</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.logs.slice().reverse().map(log => `
-        <tr class="border-b border-purple-900/20 hover:bg-purple-900/10 transition">
-          <td class="py-3 px-4 text-purple-300">${new Date(log.timestamp).toLocaleString()}</td>
-          <td class="py-3 px-4 font-mono text-xs">${log.ip}</td>
-          <td class="py-3 px-4 capitalize">${log.game}</td>
-          <td class="py-3 px-4">
-            <span class="px-2 py-0.5 rounded-full text-xs font-medium ${log.tier === 'premium' ? 'bg-purple-600/30 text-purple-300' : 'bg-gray-600/30 text-gray-300'}">
-              ${log.tier}
-            </span>
-          </td>
-        </tr>
-      `).join('');
-    }
+    // ============== ИНИЦИАЛИЗАЦИЯ ==============
+    window.addEventListener('load', async () => {
+      createDotBackground();
+      setupDotsFade();
+      setupAnimations();
+      setupMobileMenu();
+      setupSmoothScroll();
 
-    document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
+      const statuses = await loadStatuses();
+      renderScriptCards(statuses);
 
-    document.getElementById('loadScriptBtn').addEventListener('click', async () => {
-      const game = document.getElementById('scriptGame').value;
-      const tier = document.getElementById('scriptTier').value;
-      const res = await fetch(`/api/admin?action=getScript&password=${encodeURIComponent(authPassword)}&game=${game}&tier=${tier}`);
-      const data = await res.json();
-      if (data.code) {
-        document.getElementById('scriptCode').value = data.code;
-      } else {
-        alert('Error: ' + (data.error || 'Script not found'));
-      }
-    });
-
-    document.getElementById('updateScriptBtn').addEventListener('click', async () => {
-      const game = document.getElementById('scriptGame').value;
-      const tier = document.getElementById('scriptTier').value;
-      const code = document.getElementById('scriptCode').value;
-      if (!code.trim()) return alert('Enter script code');
-      const result = await apiCall({ action: 'updateScript', game, tier, code });
-      if (result.success) {
-        const btn = document.getElementById('updateScriptBtn');
-        btn.textContent = 'Updated!';
-        btn.classList.add('!bg-green-600');
-        setTimeout(() => {
-          btn.textContent = 'Update Script';
-          btn.classList.remove('!bg-green-600');
-        }, 1500);
-      } else {
-        alert('Error: ' + (result.error || 'Unknown'));
-      }
-    });
-
-    document.getElementById('rollbackBtn').addEventListener('click', async () => {
-      const game = document.getElementById('scriptGame').value;
-      const tier = document.getElementById('scriptTier').value;
-      if (!confirm(`Rollback ${game} ${tier} script to previous version?`)) return;
-      const result = await apiCall({ action: 'rollback', game, tier });
-      if (result.success) {
-        document.getElementById('scriptCode').value = result.code;
-        const btn = document.getElementById('rollbackBtn');
-        btn.textContent = 'Rolled Back!';
-        btn.classList.add('!bg-yellow-600', '!text-white');
-        setTimeout(() => {
-          btn.textContent = 'Rollback';
-          btn.classList.remove('!bg-yellow-600', '!text-white');
-        }, 1500);
-      } else {
-        alert('Error: ' + (result.error || 'Unknown'));
-      }
+      setupCopyButton('copyLoaderBtn');
+      setupCopyButton('heroCopyBtn');
+      setupDiscordButton();
     });
   </script>
 </body>
