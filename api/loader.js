@@ -1,5 +1,6 @@
 // api/loader.js
-// Serverless функция для выдачи Lua-скриптов клиентам Roblox
+// Универсальный загрузчик: сам определяет игру по PlaceId
+// Использование: loadstring(game:HttpGet("https://your-domain/api/loader"))()
 
 const GAME_SCRIPTS = {
   mm2: {
@@ -22,17 +23,24 @@ const GAME_SCRIPTS = {
   },
 };
 
+// Маппинг PlaceId → game id (добавляйте свои)
+const PLACE_ID_MAP = {
+  '142823291': 'mm2',          // MM2
+  '2753915549': 'bloxfruits',  // Blox Fruits
+  '920587237': 'adoptme',      // Adopt Me
+};
+
 function minifyLua(code) {
-  let minified = code
+  return code
     .replace(/--\[\[.*?]]/gs, '')
     .replace(/--.*$/gm, '')
     .replace(/\n\s*\n/g, '\n')
     .replace(/[ \t]+/g, ' ')
     .trim();
-  return minified;
 }
 
 async function verifySellAuthKey(key) {
+  if (!key || !process.env.SELLAUTH_API_TOKEN) return null;
   try {
     const response = await fetch('https://sellauth.com/api/v1/licenses/verify', {
       method: 'POST',
@@ -42,56 +50,53 @@ async function verifySellAuthKey(key) {
       },
       body: JSON.stringify({ license_key: key }),
     });
-
     if (!response.ok) return null;
-
     const data = await response.json();
     if (data.success && data.license?.product_id === process.env.SELLAUTH_PRODUCT_ID) {
       return 'premium';
     }
     return null;
   } catch (e) {
-    console.error('SellAuth verification error:', e);
+    console.error('SellAuth error:', e);
     return null;
   }
 }
 
 function sendLog(game, tier, ip, host) {
-  const url = `https://${host}/api/admin`;
-  const body = JSON.stringify({
-    action: 'log',
-    game,
-    tier,
-    ip,
-  });
-
-  fetch(url, {
+  fetch(`https://${host}/api/admin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body,
+    body: JSON.stringify({ action: 'log', game, tier, ip }),
   }).catch(() => {});
 }
 
 export default async function handler(req, res) {
   const ua = req.headers['user-agent'] || '';
   if (!ua.includes('Roblox')) {
-    return res.status(403).send('Access Denied: Roblox client required');
+    return res.status(403).send('-- Access Denied: Roblox client required');
   }
 
-  const { game, tier = 'free', key } = req.query;
+  const { game: queryGame, tier: queryTier, key, placeId } = req.query;
+
+  // Определяем игру
+  let game = queryGame;
+  if (!game && placeId) {
+    game = PLACE_ID_MAP[placeId] || null;
+  }
 
   if (!game || !GAME_SCRIPTS[game]) {
-    return res.status(400).send('Invalid or missing game parameter');
+    return res.status(400).send('-- Error: Unsupported game. PlaceId not recognized.');
   }
 
+  // Определяем тир
   let accessTier = 'free';
-  if (tier === 'premium') {
+  if (queryTier === 'premium' || key) {
     if (!key) {
-      return res.status(403).send('Premium key required');
+      return res.status(403).send('-- Error: Premium key required');
     }
-    const verifiedTier = await verifySellAuthKey(key);
-    if (verifiedTier !== 'premium') {
-      return res.status(403).send('Invalid or expired premium key');
+    const verified = await verifySellAuthKey(key);
+    if (verified !== 'premium') {
+      return res.status(403).send('-- Error: Invalid or expired premium key');
     }
     accessTier = 'premium';
   }
